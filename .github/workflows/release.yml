@@ -105,10 +105,13 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Publish to Marketplace (needs VSCE_PAT secret)
-        if: secrets.VSCE_PAT != ''
+      - name: Publish to Marketplace when VSCE_PAT is configured
         working-directory: editors/vscode
-        run: npx -y @vscode/vsce publish --pat "${{ secrets.VSCE_PAT }}"
-      - name: Marketplace publish skipped (no VSCE_PAT secret)
-        if: secrets.VSCE_PAT == ''
-        run: 'echo "No VSCE_PAT secret: .vsix is attached to the GitHub release only."'
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+        run: |
+          if [ -z "$VSCE_PAT" ]; then
+            echo "No VSCE_PAT secret: .vsix is attached to the GitHub release only."
+          else
+            npx -y @vscode/vsce publish --pat "$VSCE_PAT"
+          fi
