@@ -48,9 +48,9 @@ Reproduce: unpack the source package, run `cargo test` (53 passed),
 - Text backend only; native / custom-GPU / web are architectural options,
   not implemented.
 - `.lucu` VS Code extension ships in-repo (`editors/vscode/`, packaged
-  `luca-ui-1.0.0.vsix`) but is not yet on the Marketplace (needs a
-  `VSCE_PAT` secret); the Luca Code extension covers `.lucc` only. No
-  install scripts ship with this Beta.
+  `luca-ui-1.0.0.vsix`, also attached to the GitHub release) but is not yet
+  on the Marketplace (needs a `VSCE_PAT` secret); the Luca Code extension
+  covers `.lucc` only. No install scripts ship with this Beta.
 - Assumption syntax throughout (see implementation status §17 plus the
   Deferred open register); full component inventory, timing, theme tokens,
   resource formats, and adapters await the design record.

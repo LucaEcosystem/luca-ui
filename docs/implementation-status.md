@@ -397,7 +397,17 @@ tree + assumption syntax covers the locked rules without inventing inventory.
 The smallest 0.1 slice above is implemented; broader libraries/grammar are
 intentionally deferred to 0.2+ pending the full design record.
 
-## 18. Publishing checklist (1.0 Beta — NOT published)
+## 18. Publishing checklist (1.0 Beta — GitHub released; Marketplace pending)
+
+- [x] Repository created (`LucaEcosystem/luca-ui`), `main` pushed, tag
+  `v1.0.0-beta` pushed; release workflow green after fixing sibling-checkout
+  paths, Node 22 for test globs, upload paths, and the `secrets`-in-`if`
+  compile rejection
+- [x] GitHub release `v1.0.0-beta` published with 6 assets: 3 OS binary
+  tarballs, source tarball, `.vsix`, `SHA256SUMS`
+- [ ] VS Code Marketplace: needs publisher access + `VSCE_PAT` repo secret,
+  then re-run the release workflow (or `vsce publish` locally); the
+  workflow skips publish cleanly until then
 
 No release channel is configured for Luca UI, so nothing was published.
 When the project is ready, in order:
