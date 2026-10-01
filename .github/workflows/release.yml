@@ -59,8 +59,11 @@ jobs:
       - name: Upload binary tarball
         uses: actions/upload-artifact@v4
         with:
+          # Upload paths resolve against the workspace root, NOT the job
+          # working-directory above; keep this workspace-relative.
           name: binary-${{ matrix.os }}
-          path: release/*.tar.gz
+          path: Packages/Luca UI/release/*.tar.gz
+          if-no-files-found: error
 
   extension:
     name: Package extension
@@ -82,6 +85,7 @@ jobs:
         with:
           name: vsix
           path: editors/vscode/*.vsix
+          if-no-files-found: error
 
   publish:
     name: Publish GitHub release (+ Marketplace when configured)
@@ -89,11 +93,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: LucaEcosystem/luca-code
+          path: code-for-source-package
       - uses: actions/download-artifact@v4
         with:
           path: release-assets
           pattern: '*'
           merge-multiple: true
+      - name: Bundle reproducible source package
+        run: |
+          mkdir -p "source-stage/luca-ui-1.0-beta/Packages/Luca UI" "source-stage/luca-ui-1.0-beta/Packages/Luca Code"
+          git archive "${GITHUB_REF_NAME}" | tar -x -C "source-stage/luca-ui-1.0-beta/Packages/Luca UI"
+          cp -r "code-for-source-package/." "source-stage/luca-ui-1.0-beta/Packages/Luca Code/"
+          rm -rf "source-stage/luca-ui-1.0-beta/Packages/Luca Code/.git"
+          tar -czf release-assets/luca-ui-1.0.0-source.tar.gz -C source-stage luca-ui-1.0-beta
       - name: Checksums
         run: (cd release-assets && shasum -a 256 * > SHA256SUMS)
       - name: Create GitHub release
