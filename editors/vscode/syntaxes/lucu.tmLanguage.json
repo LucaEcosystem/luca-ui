@@ -1,0 +1,97 @@
+{
+  "name": "Luca UI",
+  "scopeName": "source.lucu",
+  "fileTypes": ["lucu"],
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#strings" },
+    { "include": "#numbers" },
+    { "include": "#blocks" },
+    { "include": "#declarations" },
+    { "include": "#constants" },
+    { "include": "#properties" },
+    { "include": "#forbidden" }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-dash.lucu",
+          "match": "--.*$"
+        },
+        {
+          "name": "comment.block.lucu",
+          "begin": "\\[\\[",
+          "end": "\\]\\]"
+        }
+      ]
+    },
+    "strings": {
+      "name": "string.quoted.double.lucu",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.lucu",
+          "match": "\\\\."
+        }
+      ]
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "name": "constant.numeric.decimal.lucu",
+          "match": "\\b\\d+\\.\\d+\\b"
+        },
+        {
+          "name": "constant.numeric.integer.lucu",
+          "match": "\\b\\d+\\b"
+        }
+      ]
+    },
+    "blocks": {
+      "patterns": [
+        {
+          "name": "keyword.other.lucu",
+          "match": "\\b(layout|style|state|events|transitions|theme)\\b(?=\\s*:)"
+        }
+      ]
+    },
+    "declarations": {
+      "patterns": [
+        {
+          "name": "meta.definition.component.lucu",
+          "match": "^([A-Za-z_][A-Za-z0-9_]*)\\s*:",
+          "captures": {
+            "1": { "name": "entity.name.type.lucu" }
+          }
+        }
+      ]
+    },
+    "constants": {
+      "patterns": [
+        {
+          "name": "constant.language.lucu",
+          "match": "\\b(true|false|none)\\b"
+        }
+      ]
+    },
+    "properties": {
+      "patterns": [
+        {
+          "name": "variable.other.property.lucu",
+          "match": "\\b([A-Za-z_][A-Za-z0-9_]*)\\b(?=\\s*=)"
+        }
+      ]
+    },
+    "forbidden": {
+      "patterns": [
+        {
+          "name": "invalid.illegal.imperative.lucu",
+          "match": "\\b(hide|show|set_text)\\s*\\("
+        }
+      ]
+    }
+  },
+  "uuid": "c4e8a1d2-7b3f-4c5e-9d6a-8f7b2c3d4e5a"
+}

@@ -1,0 +1,19 @@
+-- Luca UI 0.2 Alpha example: declarations, identity, and tree structure.
+-- Assumption syntax (see docs/implementation-status.md); component names are
+-- placeholders, not the locked standard library.
+App:
+  id = "app"
+  visible = true
+  Header:
+    id = "header"
+    visible = true
+    Text:
+      id = "title"
+      text = "Luca UI"
+  Body:
+    id = "body"
+    disabled = false
+    Text:
+      id = "greeting"
+      text = "Hello, Luca!"
+      visible = true

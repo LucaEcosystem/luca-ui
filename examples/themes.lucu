@@ -1,0 +1,23 @@
+-- Luca UI 0.8 Alpha example: declarative transitions and first-class themes.
+-- Assumption syntax (see docs/implementation-status.md); block, entry, and
+-- mode words here are placeholders, NOT locked vocabulary. Transition
+-- entries carry no timing semantics; theme token entries carry no styling
+-- semantics. The locked behavior shown: transitions are declared data (no
+-- imperative calls), and `mode` defaults to following system appearance.
+App:
+  id = "app"
+  theme:
+    name = "Demo"
+  Header:
+    id = "header"
+    transitions:
+      fade = "in"
+    Text:
+      id = "title"
+      text = "Luca UI"
+  Detail:
+    id = "detail"
+    theme:
+      name = "Demo dark"
+      mode = dark
+    transitions:

@@ -1,0 +1,27 @@
+-- Luca UI 0.3 Alpha example: platform-independent layout and styling.
+-- Assumption syntax (see docs/implementation-status.md); block and entry
+-- names here are placeholders, NOT the locked vocabulary. Entry names carry
+-- no locked meaning, and no dimensions, defaults, or precedence are defined.
+App:
+  id = "app"
+  visible = true
+  layout:
+    gap = 2
+    direction = "column"
+  style:
+    tone = "soft"
+  Header:
+    id = "header"
+    style:
+      emphasis = true
+    Text:
+      id = "title"
+      text = "Luca UI"
+  Body:
+    id = "body"
+    disabled = false
+    layout:
+    Text:
+      id = "greeting"
+      text = "Hello, Luca!"
+      visible = true

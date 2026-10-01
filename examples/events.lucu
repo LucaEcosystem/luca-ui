@@ -1,0 +1,23 @@
+-- Luca UI 0.5 Alpha example: events and lifecycle.
+-- Assumption syntax (see docs/implementation-status.md); block, event, and
+-- handler names here are placeholders, NOT the locked vocabulary. Each
+-- `event = handler` entry routes user interaction to Luca Code logic named
+-- by the handler; the paired events.lucc owns that logic.
+App:
+  id = "app"
+  state:
+    visits = 0
+    greeting = "Hello, Luca!"
+  Text:
+    id = "greeting"
+    text = greeting
+  Button:
+    id = "visit"
+    text = "Visit"
+    events:
+      tap = record_visit
+  Button:
+    id = "reset"
+    text = "Reset"
+    events:
+      tap = reset_visits

@@ -1,0 +1,102 @@
+name: Release
+
+# Tag-driven Beta releases. Nothing runs until a `v*` tag is pushed, so
+# merely merging to main never publishes anything.
+#
+# Secrets (repository Settings > Secrets and variables > Actions):
+#   VSCE_PAT — optional. A Visual Studio Marketplace personal access token
+#     with publish rights for the `luca-ecosystem` publisher. When absent,
+#     the workflow still builds, attaches artifacts to the GitHub release,
+#     and skips only the Marketplace publish step.
+#
+# Tagging a Beta (from a clean checkout of main):
+#   git tag v1.0.0-beta && git push origin v1.0.0-beta
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  artifacts:
+    name: Build release artifacts (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Tests
+        run: cargo test
+      - name: Release binary
+        run: cargo build --release
+      - name: Bundle binary tarball
+        shell: bash
+        run: |
+          tag="${GITHUB_REF_NAME}"
+          target="$(rustc -vV | sed -n 's/^host: //p')"
+          stage="luca-ui-${tag}-${target}"
+          mkdir -p "release/${stage}/examples"
+          cp "target/release/luca-ui${{ runner.os == 'Windows' && '.exe' || '' }}" "release/${stage}/"
+          cp README.md "docs/RELEASE-NOTES-1.0-BETA.md" "release/${stage}/"
+          cp examples/*.lucu "release/${stage}/examples/"
+          tar -czf "release/${stage}.tar.gz" -C release "${stage}"
+      - name: Upload binary tarball
+        uses: actions/upload-artifact@v4
+        with:
+          name: binary-${{ matrix.os }}
+          path: release/*.tar.gz
+
+  extension:
+    name: Package extension
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: editors/vscode
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Unit tests
+        run: npm test
+      - name: Package (.vsix)
+        run: npx -y @vscode/vsce package
+      - name: Upload .vsix
+        uses: actions/upload-artifact@v4
+        with:
+          name: vsix
+          path: editors/vscode/*.vsix
+
+  publish:
+    name: Publish GitHub release (+ Marketplace when configured)
+    needs: [artifacts, extension]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: release-assets
+          merge-multiple: true
+      - name: Checksums
+        run: (cd release-assets && shasum -a 256 * > SHA256SUMS)
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            release-assets/*
+          body_path: docs/RELEASE-NOTES-1.0-BETA.md
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Publish to Marketplace (needs VSCE_PAT secret)
+        if: secrets.VSCE_PAT != ''
+        working-directory: editors/vscode
+        run: npx -y @vscode/vsce publish --pat "${{ secrets.VSCE_PAT }}"
+      - name: Marketplace publish skipped (no VSCE_PAT secret)
+        if: secrets.VSCE_PAT == ''
+        run: 'echo "No VSCE_PAT secret: .vsix is attached to the GitHub release only."'
