@@ -1,0 +1,16 @@
+-- Paired Luca Code logic for the 0.5 Alpha events example.
+-- Handler logic lives here, in Luca Code; the .lucu side only declares
+-- `event = handler` routing. Runs with the published `luca` interpreter.
+def func record_visit(n (int)) (int):
+    return n + 1
+
+def func reset_visits(n (int)) (int):
+    return 0
+
+def var visits = 0
+visits = record_visit(visits)
+print("visits = {visits}")
+visits = record_visit(visits)
+print("visits = {visits}")
+visits = reset_visits(visits)
+print("visits = {visits}")

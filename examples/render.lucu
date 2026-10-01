@@ -1,0 +1,33 @@
+-- Luca UI 0.7 Alpha example: rendering the text backend target.
+-- Assumption syntax (see docs/implementation-status.md); component and entry
+-- names here are placeholders, NOT the locked vocabulary. The text backend
+-- presents resolved output structurally: names, ids, accessible labels, and
+-- resolved props/entries. The `preview` subtree declares `visible = false`
+-- and is skipped by every backend honoring the renderer contract.
+App:
+  id = "app"
+  label = "Demo app"
+  state:
+    title = "Hello, Luca!"
+    ratio = 2.50
+    show_preview = false
+  layout:
+    gap = 2
+  Header:
+    id = "header"
+    Text:
+      id = "title"
+      text = title
+  Preview:
+    id = "preview"
+    visible = show_preview
+    Text:
+      id = "sneak"
+      text = "You should not see this"
+  Footer:
+    id = "footer"
+    style:
+      tone = "soft"
+    Text:
+      id = "scale"
+      text = ratio

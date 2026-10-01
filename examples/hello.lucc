@@ -1,0 +1,4 @@
+-- Paired Luca Code logic for the 0.1 Alpha hello example.
+-- Runs with the published `luca` interpreter; Luca UI only reads its output.
+def const name (str) = "Luca"
+print("Hello, {name}!")

@@ -1,0 +1,19 @@
+-- Luca UI 0.4 Alpha example: state and property bindings.
+-- Assumption syntax (see docs/implementation-status.md); block and entry
+-- names here are placeholders, NOT the locked vocabulary. A bare identifier
+-- value is a binding resolved against committed state when the tree is
+-- resolved; everything else is a literal.
+App:
+  id = "app"
+  state:
+    title = "Luca UI"
+    visits = 2
+    ratio = 2.50
+    show_detail = true
+  Text:
+    id = "title"
+    text = title
+    visible = show_detail
+  Text:
+    id = "counter"
+    text = visits

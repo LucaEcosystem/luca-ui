@@ -1,0 +1,11 @@
+# Rust build output
+/target/
+# Release packages are attached to GitHub releases, not committed
+/dist/
+# Node modules (the extension has zero runtime dependencies)
+/editors/vscode/node_modules/
+# macOS metadata
+.DS_Store
+# Editor state
+.vscode/
+*.code-workspace

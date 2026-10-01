@@ -1,0 +1,58 @@
+{
+  "App skeleton": {
+    "prefix": "app",
+    "body": [
+      "App:",
+      "  id = \"${1:app}\"",
+      "  Text:",
+      "    id = \"${2:hello}\"",
+      "    text = \"${3:Hello, Luca!}\""
+    ],
+    "description": "App root with an id and a Text child"
+  },
+  "Component": {
+    "prefix": "component",
+    "body": [
+      "${1:Panel}:",
+      "  id = \"${2:id}\"",
+      "  ${3:visible = true}"
+    ],
+    "description": "named component with an id and a property"
+  },
+  "Text": {
+    "prefix": "text",
+    "body": [
+      "Text:",
+      "  id = \"${1:id}\"",
+      "  text = \"${2:Hello, Luca!}\""
+    ],
+    "description": "Text display component with id and text"
+  },
+  "Button": {
+    "prefix": "button",
+    "body": [
+      "Button:",
+      "  id = \"${1:id}\"",
+      "  text = \"${2:Go}\"",
+      "  events:",
+      "    tap = ${3:handler}"
+    ],
+    "description": "Button action component with a tap event route"
+  },
+  "State block": {
+    "prefix": "state",
+    "body": [
+      "state:",
+      "  ${1:name} = ${2:\"value\"}"
+    ],
+    "description": "state block with one literal initial value"
+  },
+  "Events block": {
+    "prefix": "events",
+    "body": [
+      "events:",
+      "  ${1:tap} = ${2:handler}"
+    ],
+    "description": "events block routing one event to a Luca Code handler"
+  }
+}

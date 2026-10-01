@@ -1,0 +1,11 @@
+-- Luca UI 0.2 Alpha example.
+-- Minimal-assumption syntax (see docs/implementation-status.md); component
+-- names here are placeholders, not the locked standard library.
+App:
+  id = "app"
+  visible = true
+  label = "Demo app"
+  Text:
+    id = "greeting"
+    text = "Hello, Luca!"
+    visible = true

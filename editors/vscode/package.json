@@ -1,0 +1,87 @@
+{
+  "name": "luca-ui",
+  "displayName": "Luca UI (1.0 Beta)",
+  "description": "Official language support for Luca UI 1.0 Beta: syntax highlighting, snippets, and one-key run for .lucu files.",
+  "version": "1.0.0",
+  "publisher": "luca-ecosystem",
+  "license": "SEE LICENSE IN LICENSE",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/LucaEcosystem/luca-ui.git"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "keywords": [
+    "luca",
+    "lucu",
+    "ui"
+  ],
+  "main": "./extension.js",
+  "activationEvents": [
+    "onLanguage:lucu"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "lucu",
+        "aliases": ["Luca UI", "lucu"],
+        "extensions": [".lucu"],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "lucu",
+        "scopeName": "source.lucu",
+        "path": "./syntaxes/lucu.tmLanguage.json"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "lucu",
+        "path": "./snippets/lucu.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "lucaui.createFile",
+        "title": "Luca UI: New Luca File"
+      },
+      {
+        "command": "lucaui.runFile",
+        "title": "Luca UI: Run Luca File"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "lucaui.runFile",
+          "when": "editorLangId == lucu",
+          "group": "navigation"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Luca UI",
+      "properties": {
+        "lucaui.cliPath": {
+          "type": "string",
+          "default": "luca-ui",
+          "description": "Path to the luca-ui CLI. Defaults to 'luca-ui' on your PATH; set an absolute path if the extension cannot find it."
+        },
+        "lucaui.runInTerminal": {
+          "type": "boolean",
+          "default": true,
+          "description": "Run Luca UI files in the integrated terminal (familiar output). When off, output goes to the Output > Luca UI channel with clickable error diagnostics instead."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "test": "node --test \"test/*.test.js\""
+  }
+}
