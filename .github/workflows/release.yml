@@ -27,8 +27,19 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
+    defaults:
+      run:
+        # Same sibling-checkout layout as CI: the `luca-code` path
+        # dependency requires Packages/Luca UI beside Packages/Luca Code.
+        working-directory: Packages/Luca UI
     steps:
       - uses: actions/checkout@v4
+        with:
+          path: Packages/Luca UI
+      - uses: actions/checkout@v4
+        with:
+          repository: LucaEcosystem/luca-code
+          path: Packages/Luca Code
       - uses: dtolnay/rust-toolchain@stable
       - name: Tests
         run: cargo test
@@ -81,6 +92,7 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           path: release-assets
+          pattern: '*'
           merge-multiple: true
       - name: Checksums
         run: (cd release-assets && shasum -a 256 * > SHA256SUMS)
