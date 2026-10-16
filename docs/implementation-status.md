@@ -2,13 +2,17 @@
 
 Current release: **1.0 Beta**. Validation/stabilization of the 0.9 candidate; no locked behavior changed.
 
-## 1. Baseline audit (2026-09-30, before changes)
+## 1. Baseline audit (2026-09-30, before changes — historical record)
 
-- `Luca UI` is not a git repository (`git status` → `fatal: not a git repository`).
-  Baseline file tree: `compiler/` (9 scaffold dirs, `.gitkeep` only), `runtime/`
-  (4 dirs), `std/` (4 dirs), `docs/{SPEC,ARCHITECTURE}.md`, `examples/` +
-  `tests/` (`.gitkeep` only), `logo/`. No existing edits to preserve; no
-  deletions made by this milestone.
+On 2026-09-30 `Luca UI` was not a git repository (`git status` → `fatal: not a git repository`).
+Baseline file tree at that time: `compiler/` (9 scaffold dirs, `.gitkeep` only), `runtime`
+(4 dirs), `std/` (4 dirs), `docs/{SPEC,ARCHITECTURE}.md`, `examples/` +
+`tests/` (`.gitkeep` only), `logo/`. No existing edits to preserve; no
+deletions made by this milestone.
+Since then the tree was initialized and published: branch `main`, remote
+`origin https://github.com/LucaEcosystem/luca-ui.git`, tag `v1.0.0-beta`
+(see §18–§19). Dated 2026-09-30 statements below describe that baseline,
+not the current repository.
 - `Luca Code` (`../Luca Code`, branch `main`, `3870808 Luca Code 1.0 Beta`):
   `cargo test` 39 passed, Clippy clean (re-verified). Pre-existing working-tree
   changes preserved untouched — `M .gitignore, README.md,
@@ -298,8 +302,8 @@ of scope until Code + UI foundations land (per SPEC).
 - [x] Luca Code generation compatibility re-verified: Code 1.0 Beta
   (package 1.0.0), 39-test suite green, zero UI edits in its tree, paired
   `.lucc` example output unchanged
-- [ ] Publish (blocked: no release channel, no registry credentials, no UI
-  repo/remote — exact checklist in §18; package is ready to run)
+- [ ] Publish (blocked: no registry credentials and no Marketplace secret —
+  repo/remote/tag exist, see §18; package is ready to run)
 
 ## 16. Locked-design reconciliation matrix (evidence maintained for 1.0 Beta)
 
@@ -409,27 +413,31 @@ intentionally deferred to 0.2+ pending the full design record.
   then re-run the release workflow (or `vsce publish` locally); the
   workflow skips publish cleanly until then
 
-No release channel is configured for Luca UI, so nothing was published.
-When the project is ready, in order:
+GitHub release `v1.0.0-beta` is published (checklist above); crates.io and
+Marketplace publication remain pending. When the project is ready, in order:
 
-1. Create the `luca-ui` repository/remote and push this tree (today Luca UI
-   is not a git repository; there is no remote, no CI, no release workflow).
+1. Repository, remote, tag, and CI/release workflows already exist
+   (`origin https://github.com/LucaEcosystem/luca-ui.git`, tag
+   `v1.0.0-beta`, `.github/workflows/ci.yml` + `release.yml`); no further
+   repository setup is needed.
 2. Decide distribution: (a) crates.io requires publishing `luca-code`
    first (absent from the registry — verified 2026-09-30), choosing a real
    license (`UNLICENSED` blocks publishing), and registry credentials
-   (`~/.cargo/credentials.toml` absent); (b) GitHub releases need a release
-   workflow + tag + artifact upload (none configured; `gh` auth exists but
-   no UI repo to attach to); (c) VS Code Marketplace needs a `.lucu`
-   language extension (the Luca Code extension covers `.lucc` only).
+   (`~/.cargo/credentials.toml` absent); (b) GitHub releases publish from
+   tags via `release.yml` (done for `v1.0.0-beta`); (c) VS Code Marketplace
+   needs publisher access + `VSCE_PAT` (the `.lucu` extension ships in
+   `editors/vscode/`; only the Luca Code extension covers `.lucc`).
 3. Attach `dist/` artifacts (offline two-tree source tarball, binary
    tarball, `SHA256SUMS`) to the release; verify checksums on download.
 4. Publish the Beta and announce with `docs/RELEASE-NOTES-1.0-BETA.md`.
 5. Never label this build stable `1.0`: `PRODUCT_VERSION` reads `1.0 Beta`
    and the package stays a Beta until the 1.0 stabilization milestone.
 
-Missing access/configuration reported 2026-09-30: no UI repo/remote/CI;
-no crates.io credentials; `luca-code`+`luca-ui` absent from crates.io;
-proprietary `UNLICENSED` license; no `.lucu` editor tooling.
+Remaining as of this review: no crates.io credentials; `luca-code` +
+`luca-ui` absent from crates.io; proprietary `UNLICENSED` license;
+Marketplace pending `VSCE_PAT`. (Resolved since the 2026-09-30 baseline:
+repository/remote/tag/CI/release workflow, `.lucu` editor tooling, and the
+GitHub `v1.0.0-beta` release with 6 assets.)
 
 ## 19. Publication prep (1.0 Beta — local commit, no push, no publish)
 
@@ -447,5 +455,38 @@ proprietary `UNLICENSED` license; no `.lucu` editor tooling.
   `SHA256SUMS` re-verified)
 - [x] Cargo suite (53), extension suite (10), Clippy, and all examples
   re-verified after every publication-prep change; Luca Code untouched
-- [ ] User creates the GitHub repo + remote, pushes, tags, releases;
-  Marketplace publish needs publisher access + `VSCE_PAT` (see handoff)
+- [x] GitHub repo + remote created, pushed, tagged (`v1.0.0-beta`), and
+  released with 6 assets (see §18)
+- [ ] Marketplace publish needs publisher access + `VSCE_PAT` (see handoff)
+
+## 20. Bounded 1.0 scope (approved)
+
+The initial release scope is exactly the implemented, tested core — no
+native GUI, browser, Android, or iOS/iPadOS rendering is included:
+
+- Declarative component core (tree, identity, locked validation).
+- Scalar state and bare-identifier bindings with batched updates.
+- Routing events with explicit/manual application-logic wiring (§21).
+- TextBackend-based rendering/output workflow (structural output for
+  validation, debugging, and testing — not on-screen UI).
+- Frozen diagnostics and the deterministic `TestHarness`.
+- Documented editor support (VS Code extension in `editors/vscode/`).
+
+Deferred beyond this scope: component inventory and grammar extensions,
+layout/style geometry and responsive behavior, transition timing, theme
+tokens, resource formats and fallback, platform accessibility adapters,
+real rendering backends, additional IDEs, and Luca Build integration.
+
+## 21. Event-to-logic contract (intended)
+
+Manual wiring is the intended contract. Application hosts wire events to
+logic with the canonical flow, demonstrated by `tests/events.rs` and the
+`events.lucu`/`events.lucc` examples:
+
+1. `dispatch` the event to obtain the handler name (`events::dispatch`).
+2. Execute the handler logic through Luca Code (`seam::run_logic`).
+3. Apply results with `State::set`, then `State::flush`.
+4. Re-resolve with `resolve_tree` and re-render.
+
+No automatic event-to-state system exists; none is planned for this
+scope. Public APIs are unchanged by this documentation.

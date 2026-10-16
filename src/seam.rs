@@ -2,24 +2,47 @@
 //!
 //! Luca UI depends on Luca Code; Luca Code never depends on Luca UI.
 //! The seam reuses the published `luca_code` library API only:
-//! `luca_code::run` / `run_with_input` for paired `.lucc` logic and
-//! `luca_code::error::LucaError` for source-located diagnostics. It does
-//! not copy the compiler or interpreter and does not change `.lucc`
-//! behavior. `.lucu` files are handled here (extension enforcement +
-//! delegation to the UI parser); `.lucc` files stay with the `luca` CLI.
+//! `luca_code::interpreter` execution plus `luca_code::error::LucaError`
+//! for source-located diagnostics. It does not copy the compiler or
+//! interpreter and does not change `.lucc` behavior. `.lucu` files are
+//! handled here (extension enforcement + delegation to the UI parser);
+//! `.lucc` files stay with the `luca` CLI.
+//!
+//! Execution uses the non-terminating `run_outcome` API so guest code can
+//! never terminate the embedding host: a guest `System.exit(code)` is
+//! returned as an exit-marked `Err` (detectable via `is_exit()`) instead
+//! of killing the process. Buffered output on exit is discarded, matching
+//! how ordinary runtime errors already discard buffered output.
 
 use std::path::Path;
 
 use crate::{Component, LucaError};
+use luca_code::interpreter::{Interpreter, RunOutcome};
 
 /// Run paired Luca Code logic and collect its `print` output.
+///
+/// A guest `System.exit(code)` returns `Err` carrying the exit marker
+/// (`is_exit()` is true, message `System.exit(code)`) rather than
+/// terminating the host. Location is reported as 1:1, consistent with the
+/// other synthesized diagnostics in this module.
 pub fn run_logic(source: &str) -> Result<Vec<String>, LucaError> {
-    luca_code::run(source)
+    match Interpreter::new().run_outcome(source) {
+        Ok(RunOutcome::Completed(output)) => Ok(output),
+        Ok(RunOutcome::Exited { code, .. }) => Err(LucaError::exit(code, 1, 1)),
+        Err(error) => Err(error),
+    }
 }
 
 /// Run paired logic with scripted `ask` input lines.
+///
+/// Same exit contract as [`run_logic`]: guest `System.exit` is returned,
+/// never executed as host termination.
 pub fn run_logic_with_input(source: &str, input: Vec<String>) -> Result<Vec<String>, LucaError> {
-    luca_code::run_with_input(source, input)
+    match Interpreter::new().with_input(input).run_outcome(source) {
+        Ok(RunOutcome::Completed(output)) => Ok(output),
+        Ok(RunOutcome::Exited { code, .. }) => Err(LucaError::exit(code, 1, 1)),
+        Err(error) => Err(error),
+    }
 }
 
 /// Enforce the `.lucu` extension (mirrors the `.lucc` enforcement in
