@@ -39,6 +39,10 @@ Then run a UI file: `luca-ui hello.lucu`. Debug builds additionally offer
   `CARGO_HOME`: `cargo test --offline` → 53 passed).
 - `SHA256SUMS` — SHA-256 checksums for every artifact above.
 
+The full 6-asset set (3 OS binary tarballs, source tarball, `.vsix`,
+`SHA256SUMS`) lives on the GitHub `v1.0.0-beta` release; `dist/` holds the
+locally built subset.
+
 Reproduce: unpack the source package, run `cargo test` (53 passed),
 `cargo clippy --all-targets --all-features -- -D warnings` (clean), and
 `cargo build --release --offline`.
