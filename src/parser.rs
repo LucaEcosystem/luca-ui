@@ -51,53 +51,57 @@ fn is_ident(text: &str) -> bool {
 
 /// Strip `[[ ... ]]` multiline comments, preserving line numbers.
 /// Returns an error for an unterminated block at its start location.
+///
+/// Iterates Unicode scalar values (not bytes): every `char` is pushed
+/// verbatim, so non-ASCII text passes through exactly, and columns count
+/// characters. Byte offsets are never used to slice or convert text.
 fn strip_multiline(source: &str) -> Result<String, LucaError> {
     let mut out = String::with_capacity(source.len());
-    let bytes = source.as_bytes();
-    let mut i = 0;
+    let mut chars = source.chars().peekable();
     let mut line = 1usize;
     let mut col = 1usize;
     let mut in_string = false;
-    while i < bytes.len() {
-        let c = bytes[i] as char;
+    let mut prev = '\0';
+    while let Some(c) = chars.next() {
         if c == '\n' {
             out.push(c);
             line += 1;
             col = 1;
-            i += 1;
+            prev = c;
             continue;
         }
-        if c == '"' && (i == 0 || bytes[i - 1] as char != '\\') {
+        if c == '"' && prev != '\\' {
             in_string = !in_string;
             out.push(c);
             col += 1;
-            i += 1;
+            prev = c;
             continue;
         }
-        if !in_string && c == '[' && i + 1 < bytes.len() && bytes[i + 1] as char == '[' {
+        if !in_string && c == '[' && chars.peek() == Some(&'[') {
             let start_line = line;
             let start_col = col;
-            i += 2;
+            chars.next();
             col += 2;
+            prev = '[';
             let mut closed = false;
-            while i < bytes.len() {
-                let d = bytes[i] as char;
+            while let Some(d) = chars.next() {
                 if d == '\n' {
                     out.push(d);
                     line += 1;
                     col = 1;
-                    i += 1;
+                    prev = d;
                     continue;
                 }
-                if d == ']' && i + 1 < bytes.len() && bytes[i + 1] as char == ']' {
+                if d == ']' && chars.peek() == Some(&']') {
+                    chars.next();
                     closed = true;
-                    i += 2;
                     col += 2;
+                    prev = ']';
                     break;
                 }
                 // Swallow comment content; keep columns roughly aligned.
                 col += 1;
-                i += 1;
+                prev = d;
             }
             if !closed {
                 return Err(LucaError::new("Unterminated multiline comment", start_line, start_col));
@@ -106,7 +110,7 @@ fn strip_multiline(source: &str) -> Result<String, LucaError> {
         }
         out.push(c);
         col += 1;
-        i += 1;
+        prev = c;
     }
     Ok(out)
 }
