@@ -3,7 +3,7 @@ name = "luca-ui"
 version = "1.0.0"
 edition = "2021"
 description = "Luca UI 1.0 Beta — declarative UI layer on Luca Code (.lucu)"
-license = "UNLICENSED"
+license-file = "LICENSE"
 
 [dependencies]
 luca-code = { version = "1.0.0", path = "../Luca Code" }
