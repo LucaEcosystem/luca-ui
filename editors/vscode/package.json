@@ -2,7 +2,7 @@
   "name": "luca-ui",
   "displayName": "Luca UI (1.0 Beta)",
   "description": "Official language support for Luca UI 1.0 Beta: syntax highlighting, snippets, and one-key run for .lucu files.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "publisher": "luca-ecosystem",
   "license": "SEE LICENSE IN LICENSE",
   "repository": {
