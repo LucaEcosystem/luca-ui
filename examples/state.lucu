@@ -1,5 +1,5 @@
--- Luca UI 0.4 Alpha example: state and property bindings.
--- Assumption syntax (see docs/implementation-status.md); block and entry
+-- Luca UI 1.0.2 Beta example: state and property bindings.
+-- Assumption syntax (may change; see docs/language.md); block and entry
 -- names here are placeholders, NOT the locked vocabulary. A bare identifier
 -- value is a binding resolved against committed state when the tree is
 -- resolved; everything else is a literal.

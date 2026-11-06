@@ -14,7 +14,7 @@ const fs = require("fs");
 const path = require("path");
 
 // Placeholder until the public launch; points at the install guide.
-const INSTALL_GUIDE_URL = "https://github.com/LucaEcosystem/luca-ui#install-10-beta";
+const INSTALL_GUIDE_URL = "https://github.com/LucaEcosystem/luca-ui/blob/main/docs/getting-started.md";
 
 const STARTER_VIEW = 'App:\n  id = "app"\n  Text:\n    id = "hello"\n    text = "Hello, Luca!"\n';
 

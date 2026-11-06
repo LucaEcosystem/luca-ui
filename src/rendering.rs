@@ -1,6 +1,6 @@
-//! Rendering abstraction for 0.7 Alpha (`runtime/rendering` in ARCHITECTURE).
+//! Rendering abstraction (the runtime/rendering architectural role).
 //!
-//! Locked facts from `docs/SPEC.md`: the UI targets a platform-independent
+//! Locked design facts: the UI targets a platform-independent
 //! API backed by a rendering abstraction; native, custom/GPU, and web are
 //! intended backend *options*; the core vocabulary carries no
 //! platform-specific components. Renderer-specific behavior is explicitly
@@ -20,7 +20,7 @@
 //! Absent `visible` means shown: the property applies where applicable, and
 //! nothing else in the locked model distinguishes hidden output. This and
 //! the line format of `TextBackend` are minimal assumptions, not design
-//! (see `docs/implementation-status.md`).
+//!.
 
 use luca_code::types::Value;
 

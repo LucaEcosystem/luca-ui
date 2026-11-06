@@ -1,6 +1,6 @@
 //! Platform-independent styling representation for 0.3 Alpha.
 //!
-//! Locked facts from `docs/SPEC.md`: styling is part of the declarative
+//! Locked design facts: styling is part of the declarative
 //! layer; the UI API is platform-independent and backed by a rendering
 //! abstraction; no platform-specific components in the core vocabulary.
 //! Nothing else about styling is locked: style property names, theme

@@ -1,14 +1,14 @@
-# Compatibility notes — Luca UI 1.0 Beta (publication Beta, NOT stable 1.0)
+# Compatibility notes — Luca UI 1.0.2 Beta
 
 ## Generation and versions
 
-Luca Code and Luca UI share one compatibility generation (SPEC
-§Compatibility). The verified pair for this candidate:
+Luca Code and Luca UI share one compatibility generation (the locked
+compatibility decisions). The verified pair for this release:
 
 | Product | Version | Status |
 |---|---|---|
 | Luca Code | 1.0 Beta (`PRODUCT_VERSION`, `Cargo.toml` 1.0.0) | Published host language; 39-test suite green |
-| Luca UI | 1.0 Beta (`PRODUCT_VERSION`, `Cargo.toml` 1.0.0) | Publication Beta; **do not publish, do not label stable** |
+| Luca UI | 1.0.2 Beta (`PRODUCT_VERSION`, `Cargo.toml` 1.0.2) | Publication Beta; **do not publish, do not label stable** |
 
 Minor releases within the generation stay compatible. A new generation
 starts the SPEC migration timetable; historic releases are archived, and
@@ -25,11 +25,11 @@ installed copies keep running (no remote revocation).
   Luca UI; its suite, behavior, and user files are untouched by UI work.
 - Paired `.lucc` logic runs on the real interpreter through the seam;
   results re-enter UI state only via `State::set`/`flush`. There is no
-  automatic `.lucc`→state protocol in 0.9.
+  automatic `.lucc`→state protocol in 1.0.2 Beta.
 
 ## Backend support matrix
 
-| Target | Status in 0.9 |
+| Target | Status in 1.0.2 Beta |
 |---|---|
 | Headless text backend | Implemented (`TextBackend`); all examples verified through it |
 | Native / custom-GPU / web | Architectural options only — NOT implemented, NOT claimed |

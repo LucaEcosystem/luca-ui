@@ -1,4 +1,4 @@
-# Diagnostics catalog — Luca UI 0.9 Alpha (stable)
+# Diagnostics catalog — Luca UI 1.0.2 Beta
 
 Every toolchain failure is a source-located Luca error rendered as
 `Error at line:column: message` (`luca_code::error::LucaError`). Luca UI

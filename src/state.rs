@@ -1,12 +1,12 @@
 //! Declarative application state for 0.4 Alpha.
 //!
-//! Locked facts from `docs/SPEC.md`: UI output is derived from application
+//! Locked design facts: UI output is derived from application
 //! state and declared properties; state updates are batched; components are
 //! manipulated through state, never through component references or
 //! imperative operations; invalid values are source-located Luca errors.
 //! State declaration and binding syntax are NOT locked, so the `state:`
 //! block and the rules below are a minimal compatible assumption
-//! (see `docs/implementation-status.md`).
+//!.
 //!
 //! Value semantics come from Luca Code through the integration seam:
 //! state values are `luca_code::types::Value` scalars (exact `Dec`

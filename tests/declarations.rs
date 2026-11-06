@@ -1,11 +1,11 @@
 //! 0.2 Alpha: component declarations, identity, property validation, tree.
 //!
-//! Uses only SPEC-locked rules: `id` on every component (unique, non-empty
+//! Uses only design-locked rules: `id` on every component (unique, non-empty
 //! string, suitable for tests), `visible`/`disabled` as ordinary bool props,
 //! no component references or imperative ops, source-located Luca errors.
 //! Per-component property inventories are NOT locked, so generic props
 //! (e.g. `text`) are accepted; only malformed or locked-rule-violating
-//! properties are rejected (see `docs/implementation-status.md`).
+//! properties are rejected.
 
 use luca_ui::{parse, PropValue};
 

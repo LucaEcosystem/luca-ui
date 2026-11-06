@@ -1,6 +1,6 @@
-//! Core accessibility model for 0.6 Alpha (`runtime/accessibility` in ARCHITECTURE).
+//! Core accessibility model (the runtime/accessibility architectural role).
 //!
-//! Locked facts from `docs/SPEC.md` (decisions 96–100): accessibility is a
+//! Locked design facts (decisions 96–100): accessibility is a
 //! core capability, not a platform-only add-on; components expose
 //! accessibility labels and related semantics; Luca UI infers accessible
 //! information when it can and allows explicit overrides; platform adapters
@@ -9,7 +9,7 @@
 //! defined here, and this module carries zero platform concepts — mapping
 //! behind adapters is deferred with the adapter milestone.
 //!
-//! Minimal assumption (see `docs/implementation-status.md`): an explicit
+//! Minimal assumption: an explicit
 //! `label` always wins; otherwise a `text` value supplies the inferred
 //! label when it is a string; otherwise there is no label (valid — not
 //! every component has accessible text). `describe` reads the declared

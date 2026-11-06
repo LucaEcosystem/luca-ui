@@ -1,14 +1,14 @@
-//! Core cross-platform component library for 0.9 Alpha (`std/components`
-//! in ARCHITECTURE).
+//! Core cross-platform component library (the std/components architectural
+//! role).
 //!
-//! Locked facts from `docs/SPEC.md` (§Components): core components are
+//! Locked design facts (core components):
 //! cross-platform; they adapt to the target platform while retaining the
 //! shared API; platform-specific APIs live outside the core vocabulary.
 //! The component *inventory* is NOT locked (it must follow the complete
 //! design record), so this registry holds the 0.9 minimal core only — the
 //! container, display, and action surface exercised by the shipped examples
 //! and tests — and is explicitly extensible
-//! (see `docs/implementation-status.md`).
+//!.
 //!
 //! Every core component shares the locked API (`id`, `visible`, `disabled`,
 //! `label`) plus its listed generic props. Validation rejects unknown

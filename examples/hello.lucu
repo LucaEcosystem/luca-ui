@@ -1,5 +1,5 @@
--- Luca UI 0.2 Alpha example.
--- Minimal-assumption syntax (see docs/implementation-status.md); component
+-- Luca UI 1.0.2 Beta example: the smallest correct tree.
+-- Minimal-assumption syntax (may change; see docs/language.md); component
 -- names here are placeholders, not the locked standard library.
 App:
   id = "app"

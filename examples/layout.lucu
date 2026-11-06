@@ -1,5 +1,5 @@
--- Luca UI 0.3 Alpha example: platform-independent layout and styling.
--- Assumption syntax (see docs/implementation-status.md); block and entry
+-- Luca UI 1.0.2 Beta example: platform-independent layout and styling.
+-- Assumption syntax (may change; see docs/language.md); block and entry
 -- names here are placeholders, NOT the locked vocabulary. Entry names carry
 -- no locked meaning, and no dimensions, defaults, or precedence are defined.
 App:

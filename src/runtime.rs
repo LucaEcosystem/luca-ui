@@ -1,10 +1,10 @@
-//! Minimal lifecycle runtime for 0.5 Alpha (`runtime/core` in ARCHITECTURE).
+//! Minimal lifecycle runtime (the runtime/core architectural role).
 //!
-//! Locked facts from `docs/SPEC.md`: component lifecycle is managed by the
+//! Locked design facts: component lifecycle is managed by the
 //! runtime, and component-scoped asynchronous work is cancelled when its
 //! component leaves the rendered tree. Lifecycle and task APIs are NOT
 //! locked, so this module is a minimal compatible assumption
-//! (see `docs/implementation-status.md`):
+//!:
 //!
 //! - `Runtime` owns the current tree plus its `State`. `update_tree` swaps
 //!   in a replacement render: it reports which component ids mounted and

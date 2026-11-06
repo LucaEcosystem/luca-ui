@@ -1,14 +1,14 @@
 //! Declarative component tree: declarations, identity, blocks, and events.
 //!
-//! Locked rules enforced here (from `docs/SPEC.md`): components nest into a
+//! Locked rules enforced here: components nest into a
 //! tree; every component may carry `id` (unique, non-empty string, suitable
 //! for tests); `visible`/`disabled` are ordinary boolean properties; layout,
 //! styling, state, and events are part of the declarative layer via
 //! platform-independent, backend-agnostic blocks; no component references or
 //! imperative component operations (`hide()`/`show()`/`set_text()`);
 //! diagnostics are ordinary source-located Luca errors. Block entry names
-//! and semantics not locked in SPEC are validated structurally only
-//! (see `docs/implementation-status.md`).
+//! and semantics not locked by the design record are validated structurally only
+//!.
 //!
 //! Per-component inventories for the registered core set are enforced
 //! (`crate::library`); unregistered names stay generic with locked rules

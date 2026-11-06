@@ -1,7 +1,7 @@
-//! 0.8 Alpha runnable example: built-in localization resource lookup
+//! Luca UI 1.0.2 Beta runnable example: built-in localization resource lookup
 //! (`cargo run --example localize`). No resource file format exists yet —
 //! tables are built programmatically; lookup is exact-locale with no
-//! fallback chain (see `docs/implementation-status.md`).
+//! fallback chain (see docs/styling-theming.md).
 
 use luca_ui::Resources;
 
@@ -17,6 +17,6 @@ fn main() {
     }
     match resources.lookup("de", "farewell") {
         Some(text) => println!("de farewell: {text}"),
-        None => println!("de farewell: (missing — no fallback chain in 0.8)"),
+        None => println!("de farewell: (missing — no fallback chain)"),
     }
 }

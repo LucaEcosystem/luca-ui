@@ -1,10 +1,10 @@
 //! 0.3 Alpha: platform-independent layout/style representation and validation.
 //!
-//! Uses only SPEC-locked facts: layout/styling belong to the declarative
+//! Uses only design-locked facts: layout/styling belong to the declarative
 //! layer; the UI model is platform-independent with no backend concepts;
 //! invalid values are source-located Luca errors. Entry names, dimensions,
 //! defaults, and precedence are NOT locked, so entries are validated
-//! structurally only (see `docs/implementation-status.md`).
+//! structurally only.
 
 use luca_ui::{parse, PropValue};
 

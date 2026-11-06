@@ -3,7 +3,7 @@
 //!
 //! Timing defaults, theme token names, and resource formats are NOT locked
 //! and are NOT defined here — entries/tokens/tables are structural data
-//! only (see `docs/implementation-status.md`).
+//! only.
 
 use luca_ui::{
     parse, Environment, Resources, SystemAppearance, ThemeMode,

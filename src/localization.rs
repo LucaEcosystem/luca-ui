@@ -1,10 +1,10 @@
 //! Localization foundations for 0.8 Alpha.
 //!
-//! Locked facts from `docs/SPEC.md`: localization support is built in.
+//! Locked design facts: localization support is built in.
 //! Resource formats are NOT locked, so this module defines no file format
 //! and no `.lucu` resource syntax — tables are built programmatically and
 //! `.lucu` linkage awaits the resource-format design record
-//! (see `docs/implementation-status.md`).
+//!.
 //!
 //! Minimal foundation: `Resources` maps locales to key/text tables with
 //! exact-locale lookup. Missing keys and unknown locales return `None`

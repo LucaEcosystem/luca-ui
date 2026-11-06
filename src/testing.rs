@@ -1,4 +1,4 @@
-//! Dedicated UI testing API for 0.9 Alpha (SPEC decision 106–115: dedicated
+//! Dedicated UI testing API for 0.9 Alpha (locked decision 106–115: dedicated
 //! UI tests and explicit component identifiers).
 //!
 //! `TestHarness` drives a parsed tree deterministically with no I/O,

@@ -1,10 +1,32 @@
 # Changelog — Luca UI
 
-All notable changes, per staged Alpha milestone. `PRODUCT_VERSION` is the
-user-facing label; `Cargo.toml` carries the numeric packaging version.
-Assumption-status notes live in `docs/implementation-status.md`.
+All notable changes, per release. `PRODUCT_VERSION` is the user-facing
+label; `Cargo.toml` carries the numeric package version. Feature status
+(● locked / ◐ assumption / ○ not implemented) is documented in the
+guides under `docs/`.
 
-## 1.0 Beta (`PRODUCT_VERSION = "1.0 Beta"`, package `1.0.0`)
+## 1.0.2 Beta (`PRODUCT_VERSION = "1.0.2 Beta"`, package `1.0.2`)
+
+Documentation and release-labeling release on the 1.0 Beta line; **no
+language behavior changed**.
+
+- Package version bumped to `1.0.2`; `PRODUCT_VERSION` reads `1.0.2 Beta`.
+- Documentation overhaul: a user-facing guide set under `docs/`
+  (getting started, `.lucu` language reference, components, state and
+  events, testing, rendering, styling/theming/localization, examples
+  index, CLI reference, plus a docs index) with verified outputs for
+  every snippet; the root README is a rewritten landing page.
+- VS Code extension updated to 1.0.2 with an expanded README
+  (settings, troubleshooting, Marketplace-style install paths).
+- Example headers and the `localize` example wording refreshed for the
+  1.0.2 Beta release state.
+- `tests/compatibility.rs` now compares the two products' release labels
+  at generation level (shared `1.0` prefix) so patch releases within the
+  generation stay green.
+
+No diagnostics wording changed; the frozen catalog is unchanged.
+
+## 1.0 Beta (initial publication, `PRODUCT_VERSION = "1.0 Beta"`, package `1.0.0`)
 
 Publication Beta — **not stable 1.0**. Validation and stabilization of the
 0.9 candidate; no locked language behavior changed.
@@ -12,12 +34,12 @@ Publication Beta — **not stable 1.0**. Validation and stabilization of the
 - `luca-code` path dependency gains its `version = "1.0.0"` requirement
   (packaging metadata only; resolution and behavior unchanged).
 - Release artifacts: offline-capable two-tree source package, release
-  binary tarball, `SHA256SUMS` (see `docs/RELEASE-NOTES-1.0-BETA.md`).
+  binary tarball, `SHA256SUMS` (see `docs/RELEASE-NOTES.md`).
 - Publication prep: `luca-ui` VS Code extension (`.lucu` highlighting,
   snippets, run command; 10 unit tests; packaged `.vsix`), CI workflow,
   tag-driven release workflow (GitHub release + optional Marketplace
   publish via `VSCE_PAT`), repository initialized for first push.
-- Docs: `docs/CHANGELOG.md`, `docs/RELEASE-NOTES-1.0-BETA.md`,
+- Docs: `docs/CHANGELOG.md`, `docs/RELEASE-NOTES.md`,
   `docs/compatibility.md` refreshed for the Beta pair.
 
 ## 0.9 Alpha (Beta candidate, unpublished)

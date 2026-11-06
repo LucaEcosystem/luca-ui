@@ -1,5 +1,5 @@
--- Luca UI 0.2 Alpha example: declarations, identity, and tree structure.
--- Assumption syntax (see docs/implementation-status.md); component names are
+-- Luca UI 1.0.2 Beta example: declarations, identity, and tree structure.
+-- Assumption syntax (may change; see docs/language.md); component names are
 -- placeholders, not the locked standard library.
 App:
   id = "app"

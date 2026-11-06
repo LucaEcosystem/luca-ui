@@ -1,4 +1,4 @@
-//! 0.7 Alpha runnable example: resolve `examples/render.lucu` against its
+//! Luca UI 1.0.2 Beta runnable example: resolve `examples/render.lucu` against its
 //! state and present it with the text backend (`cargo run --example render`).
 
 use luca_ui::{parse, resolve_tree, State, TextBackend};

@@ -1,5 +1,5 @@
--- Luca UI 0.5 Alpha example: events and lifecycle.
--- Assumption syntax (see docs/implementation-status.md); block, event, and
+-- Luca UI 1.0.2 Beta example: events and lifecycle.
+-- Assumption syntax (may change; see docs/language.md); block, event, and
 -- handler names here are placeholders, NOT the locked vocabulary. Each
 -- `event = handler` entry routes user interaction to Luca Code logic named
 -- by the handler; the paired events.lucc owns that logic.

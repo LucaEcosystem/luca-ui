@@ -1,9 +1,9 @@
 //! First-class themes and system appearance for 0.8 Alpha.
 //!
-//! Locked facts from `docs/SPEC.md`: themes are first-class and system
+//! Locked design facts: themes are first-class and system
 //! appearance is followed automatically by default. Theme token names are
 //! NOT locked, so token entries are opaque data with no styling semantics
-//! (see `docs/implementation-status.md`).
+//!.
 //!
 //! Minimal assumption enabling the locked default-follow behavior: a theme
 //! declares an optional `name` (display string) and an optional `mode` of

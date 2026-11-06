@@ -1,6 +1,6 @@
 //! Platform-independent layout representation for 0.3 Alpha.
 //!
-//! Locked facts from `docs/SPEC.md`: layout is part of the declarative
+//! Locked design facts: layout is part of the declarative
 //! layer; the UI API is platform-independent and backed by a rendering
 //! abstraction; no platform-specific components in the core vocabulary; a
 //! development inspector may show layout bounds. Nothing else about layout

@@ -1,10 +1,10 @@
 //! Declarative animation foundations for 0.8 Alpha.
 //!
-//! Locked facts from `docs/SPEC.md`: animation is part of the core API and
+//! Locked design facts: animation is part of the core API and
 //! transitions are declarative. Transition syntax and timing defaults are
 //! NOT locked, so the `transitions:` block below is a minimal compatible
 //! assumption carrying generic entries with no timing or property semantics
-//! (see `docs/implementation-status.md`).
+//!.
 //!
 //! What this module does implement from locked-adjacent behavior:
 //! transitions are declaration data, never imperative start/stop calls

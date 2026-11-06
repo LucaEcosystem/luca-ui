@@ -1,4 +1,4 @@
-//! Development-only visual inspector for 0.9 Alpha (SPEC decision 106–115:
+//! Development-only visual inspector for 0.9 Alpha (locked decision 106–115:
 //! a development inspector that may inspect the component tree, state, and
 //! layout bounds).
 //!
@@ -7,7 +7,7 @@
 //! values, and layout *declarations*. Layout *bounds* are not reported:
 //! bounds need dimension semantics the locked design does not define, so
 //! the snapshot carries the declared entries bounds will derive from, and
-//! says so explicitly (see `docs/implementation-status.md`). Nothing here
+//! says so explicitly. Nothing here
 //! mutates the runtime, and the CLI exposes `inspect` in debug builds only.
 
 use crate::{Component, LucaError, Runtime, State};

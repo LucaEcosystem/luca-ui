@@ -1,5 +1,5 @@
--- Luca UI 0.8 Alpha example: declarative transitions and first-class themes.
--- Assumption syntax (see docs/implementation-status.md); block, entry, and
+-- Luca UI 1.0.2 Beta example: declarative transitions and first-class themes.
+-- Assumption syntax (may change; see docs/language.md); block, entry, and
 -- mode words here are placeholders, NOT locked vocabulary. Transition
 -- entries carry no timing semantics; theme token entries carry no styling
 -- semantics. The locked behavior shown: transitions are declared data (no

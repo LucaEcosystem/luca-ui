@@ -1,5 +1,5 @@
--- Luca UI 0.7 Alpha example: rendering the text backend target.
--- Assumption syntax (see docs/implementation-status.md); component and entry
+-- Luca UI 1.0.2 Beta example: rendering with the text backend.
+-- Assumption syntax (may change; see docs/language.md); component and entry
 -- names here are placeholders, NOT the locked vocabulary. The text backend
 -- presents resolved output structurally: names, ids, accessible labels, and
 -- resolved props/entries. The `preview` subtree declares `visible = false`

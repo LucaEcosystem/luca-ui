@@ -1,173 +1,142 @@
-# Luca UI 1.0 Beta (publication Beta — not stable 1.0)
+# Luca UI
 
-Declarative UI layer on Luca Code. Files: `.lucu` for UI, `.lucc` for logic.
-Luca Code stays independent — this toolchain only reads `.lucc` via the
-published `luca_code` library; it never copies the compiler or edits `.lucc`
-behavior.
+**Declarative UI for [Luca Code](https://github.com/LucaEcosystem/luca-ui)** — describe a screen in `.lucu`, write its logic in `.lucc`.
 
-## Install (1.0 Beta)
-
-Requires Rust (stable) with the Luca Code checkout as a sibling directory
-(the `luca-code` dependency is a relative path dependency):
-
-```sh
-cargo install --path /path/to/Luca-UI --root ~/.luca-ui-1.0-beta
-export PATH="$HOME/.luca-ui-1.0-beta/bin:$PATH"
-luca-ui --version   # luca-ui 1.0 Beta
+```text
+App:
+  id = "app"
+  state:
+    greeting = "Hello, Luca!"
+  Text:
+    id = "greeting"
+    text = greeting
 ```
 
-No install scripts ship with this Beta; no Marketplace/registry release
-exists yet (see `docs/implementation-status.md` §18).
+No `hide()` or `set_text()`: components never get commanded. You change state, and the UI derives from it. Events route interaction to Luca Code logic, and every failure is a source-located `Error at line:column: message`.
 
-## VS Code extension (1.0 Beta)
+> **Version 1.0.2 Beta** — of the Luca UI 1.0 Beta line. This is a Beta: the toolchain is real and tested (66 Rust tests, frozen diagnostics catalog), but some syntax is a labeled assumption that may change before 1.0 stable. The docs mark anything that may change with an explicit status marker.
 
-`editors/vscode/` holds the official Luca UI extension: `.lucu` syntax
-highlighting, snippets, a starter-file command, and one-key run through
-the `luca-ui` CLI (`lucaui.cliPath` setting, `Output > Luca UI` channel,
-`Error at line:column:` diagnostics). Zero runtime dependencies;
-`npm test` runs its 10 unit tests. Until it is published, install the
-local build with `code --install-extension editors/vscode/luca-ui-1.0.0.vsix`.
+---
 
-## Run the examples
+## Quick start (~5 minutes)
+
+**Requirements:** Rust (stable) and a [Luca Code](https://github.com/LucaEcosystem/luca-ui) checkout as a **sibling directory** named `Luca Code` (the `luca-ui` package depends on `luca-code` by relative path — the build reads it directly):
+
+```text
+Packages/
+  Luca Code/    ← Luca Code repository
+  Luca UI/      ← this repository
+```
+
+**Install:**
+
+```sh
+cargo install --path . --root ~/.luca-ui
+export PATH="$HOME/.luca-ui/bin:$PATH"
+luca-ui --version        # luca-ui 1.0.2 Beta
+```
+
+**Run the hello example:**
 
 ```sh
 cargo run -- examples/hello.lucu
-cargo run -- examples/declarations.lucu
-cargo run -- examples/layout.lucu
-cargo run -- examples/state.lucu
-cargo run -- examples/events.lucu
-cargo run -- examples/navigation.lucu
 ```
 
-Render `examples/render.lucu` with the text backend (the implemented target):
+```text
+App (4:1) id="app"
+  .id = "app"
+  .visible = true
+  .label = "Demo app"
+  Text (8:3) id="greeting"
+    .id = "greeting"
+    .text = "Hello, Luca!"
+    .visible = true
+```
+
+**Try state + bindings:**
+
+```sh
+cargo run -- examples/state.lucu
+```
+
+**Try events (routing to Luca Code logic):**
+
+```sh
+cargo run -- examples/events.lucu
+cargo run -p luca-code --manifest-path "../Luca Code/Cargo.toml" -- examples/events.lucc
+```
+
+```text
+visits = 1
+visits = 2
+visits = 0
+```
+
+**Render through the text backend:**
 
 ```sh
 cargo run --example render
 ```
 
-Validate `examples/themes.lucu` and run the localization lookup demo:
+Everything is explained step by step in [Getting started](docs/getting-started.md).
+
+## The VS Code extension
+
+`editors/vscode/` ships the official Luca UI extension: `.lucu` syntax highlighting, snippets, a starter-file command, and one-key run through the CLI. Zero runtime dependencies.
 
 ```sh
-cargo run -- examples/themes.lucu
-cargo run --example localize
+code --install-extension editors/vscode/luca-ui-1.0.2.vsix
 ```
 
-Inspect tree, state, and layout declarations (debug builds only):
+Details and settings: [`editors/vscode/README.md`](editors/vscode/README.md).
+
+## What works, what doesn't
+
+| Area | Status |
+|---|---|
+| `.lucu` parse/validation, component tree, ids | ● Locked, enforced |
+| State (`state:` blocks, batched `set`/`flush`), bindings | ● Locked model, ◐ assumption syntax |
+| Events (`events:` routing to handler names) | ● Locked boundary, ◐ assumption syntax |
+| Accessibility labels (explicit wins, `text` infers) | ● Locked |
+| Navigation (component-id stack, no routes) | ● Locked |
+| Text rendering backend + rendering contract | ● Locked contract, ◐ assumption format |
+| `TestHarness` UI testing, dev inspector | Implemented |
+| Native / GPU / web backends, platform adapters | ○ Not implemented |
+| Full component inventory, layout/style semantics, transition timing, theme tokens, resource files | ○ Open — awaiting the locked design record |
+
+Links for every claim: [docs README](docs/README.md) → the guides.
+
+## Documentation
+
+Start at **[docs/README.md](docs/README.md)**. Newcomers: [Getting started](docs/getting-started.md) → [The `.lucu` language](docs/language.md) → [Components](docs/components.md) → [State and events](docs/state-and-events.md). Day-to-day: [Testing](docs/testing.md), [Rendering](docs/rendering.md), [Styling and theming](docs/styling-theming.md), [Examples](docs/examples.md), [CLI reference](docs/cli.md). Reference: [Diagnostics catalog](docs/diagnostics.md) (frozen message wording), [Compatibility](docs/compatibility.md), [Release notes](docs/RELEASE-NOTES.md).
+
+## Rules at a glance
+
+The full explanation lives in the [language guide](docs/language.md); the short version:
+
+- One `.lucu` file declares **one root component**; children nest by indentation. `.lucc` files are logic and belong to Luca Code — this toolchain only reads them through the published library.
+- Every component may have `id` (unique, non-empty string — the addressing mechanism for tests, events, navigation). `visible`, `disabled`, and `label` are enforced wherever they appear: booleans, boolean, string.
+- Output = state + declared properties. Bare-identifier values (`text = title`) are bindings; updates go through `set` (stage) and `flush` (commit, coalesced).
+- Events are the interaction boundary: `events:` blocks map an event name to a handler *name*; dispatch validates and returns that name — no component references exist anywhere.
+- Imperative component operations (`hide()`, `show()`, `set_text`) do not exist and are compile-time errors.
+- Accessibility is core: an explicit `label` wins, a string `text` infers the label otherwise, missing labels are valid.
+- Navigation is component-based: a stack of component ids. No routes, no path syntax.
+- Every failure is `Error at line:column: message` with cataloged, frozen wording.
+
+## Development
 
 ```sh
-cargo run -- inspect examples/layout.lucu
+cargo test                   # the full suite
+cargo clippy --all-targets --all-features -- -D warnings
+cargo run -- examples/hello.lucu
+cargo run --example render   # text-backend rendering
+cargo run -- inspect examples/layout.lucu   # dev inspector (debug builds)
 ```
 
-`examples/declarations.lucu` (assumption syntax, not locked design):
+The extension's tests: `npm test` inside `editors/vscode/` (10 unit tests, no dependencies).
 
-```text
-App:
-  id = "app"
-  visible = true
-  Header:
-    id = "header"
-    visible = true
-    Text:
-      id = "title"
-      text = "Luca UI"
-  Body:
-    id = "body"
-    disabled = false
-    Text:
-      id = "greeting"
-      text = "Hello, Luca!"
-      visible = true
-```
+Packaging: `cargo build --release` produces the `luca-ui` binary; `editors/vscode` packages the `.vsix` with `npx @vscode/vsce package`.
 
-Paired logic `examples/hello.lucc` runs with the `luca` interpreter:
+## License
 
-```sh
-cargo run -p luca-code --manifest-path "../Luca Code/Cargo.toml" -- examples/hello.lucc
-```
-
-## Rules enforced in 1.0 Beta (SPEC-locked only)
-
-- Components nest into a single-root tree; malformed declarations
-  (`Name:` shape, properties outside a component, second roots) are
-  compile-time Luca errors.
-- `id` is supported on every component: non-empty string, unique across the
-  tree (suitable for tests); duplicates and non-string ids are Luca errors.
-- `visible`/`disabled` are ordinary boolean properties wherever they appear;
-  non-bool values are Luca errors. `label`, when present, must be a string.
-- Declarative only: `hide`/`show`/`set_text` keys, call-shaped lines, and
-  call values are rejected — update state and allow the UI to react. There
-  is no component-mutation API; `set`/`flush` on `State` is the only way
-  output changes.
-- State and bindings: one `state:` literal block per component declares typed
-  variables (`str`/`bool`/`int`/`dec` inferred, `none` infers `uni`) with Luca
-  Code value semantics (exact decimals, `none`-occupies-any-type). A
-  bare-identifier value (e.g. `text = title`) is a binding resolved against
-  committed state when the tree is resolved; undeclared names and
-  wrongly-typed locked props fail at the binding site. Updates are staged by
-  `set` and committed together by `flush` (one notification per listener per
-  changed key); listeners of removed components are pruned so their pending
-  work is never emitted.
-- Events are the interaction boundary: one `events:` block per component
-  holds `event = handler` entries where the handler names Luca Code logic.
-  Dispatch validates the component id and event and returns the handler
-  name; the logic runs on the existing seam and feeds back only through
-  state. Dispatch exposes no component references.
-- Lifecycle is runtime-managed: tree swaps report mounted/unmounted ids,
-  keep committed state, prune listeners of removed components, and cancel
-  their scoped tasks. Scoping work to an unmounted component is an error.
-- Navigation is component-based: a stack of component ids with push / pop /
-  replace over one declared tree. There are no routes, route tables, or path
-  syntax; unknown ids and popping the root screen are Luca errors.
-- Accessibility is core: every component describes an optional label —
-  an explicit `label` always wins, a string `text` is inferred otherwise,
-  and bound values participate through resolved output. Missing labels are
-  valid; non-string labels are Luca errors. The model carries no platform
-  concepts; adapter mapping is deferred.
-- Layout and styling are declarative, platform-independent attachments: at
-  most one `layout:` and one `style:` block per component, holding only
-  `key = value` scalar entries. No platform, unit, theme-token, or
-  precedence concepts exist in the component model. Entry names carry no locked
-  meaning; no dimensions, defaults, or precedence are defined.
-- Rendering is a platform-independent abstraction: every backend receives
-  the resolved tree once, visits visible nodes depth-first, skips
-  `visible == false` subtrees, reads only the shared model, and renders
-  deterministically. The implemented target is the headless text backend
-  (structural lines; exact decimal scale; interprets no component names).
-  Native, custom/GPU, and web backends are intended options and are NOT
-  implemented.
-- Animation is declarative data: at most one `transitions:` block per
-  component holds generic entries with no timing semantics and no
-  start/stop calls. Transitions gate on platform reduced-motion (on:
-  suppressed), preserving accessibility.
-- Themes are first-class: at most one `theme:` block per component with an
-  optional `name` and `mode` (`system` follows platform appearance
-  automatically by default; `light`/`dark` pin it). Other entries are
-  opaque future tokens with no styling semantics.
-- Localization is built in as resource tables with exact-locale lookup;
-  missing keys/locales return nothing. No file formats, fallback chains,
-  or `.lucu` resource syntax exist yet.
-- Core library: `App` (root container), `Text` (labeled display), and
-  `Button` (labeled action) share the locked API and are cross-platform by
-  construction. Unknown props on registered components are Luca errors
-  naming the supported list; unregistered names stay generic (open
-  vocabulary — the full inventory awaits the design record).
-- Testing API: `TestHarness` drives a tree deterministically — dispatch by
-  id, `set`/`flush` state, swap trees, read resolved props/labels/
-  visibility, render — addressing components by `id` only.
-- Diagnostics are frozen: every failure is `Error at line:column: message`
-  with cataloged wording (`docs/diagnostics.md`); wording changes are
-  breaking changes.
-- Inspector (development only): read-only snapshots of component tree,
-  committed state, and layout declarations. Layout *bounds* need dimension
-  semantics the locked design does not define, so they are explicitly
-  deferred, not silently assumed.
-- Every failure is a source-located Luca diagnostic:
-  `Error at line:column: message`.
-- Only `.lucu` files are loaded; other extensions are rejected.
-
-Unregistered component names accept generic props; only malformed or
-locked-rule-violating properties are rejected there. Broader grammar and
-the full component library await the full design record — see
-`docs/implementation-status.md` (§16 reconciliation matrix),
-`docs/compatibility.md`, and `docs/SPEC.md`. Do
-not treat 1.0 Beta assumption syntax as locked.
+Proprietary — see [LICENSE](LICENSE).

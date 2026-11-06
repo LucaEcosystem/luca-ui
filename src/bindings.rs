@@ -1,11 +1,11 @@
 //! Property bindings for 0.4 Alpha: UI output derived from state.
 //!
-//! Locked facts from `docs/SPEC.md`: UI output derives from application
+//! Locked design facts: UI output derives from application
 //! state and declared properties; components change through state, never
 //! through references or imperative operations; invalid values are
 //! source-located Luca errors. Binding syntax is NOT locked, so the rule
 //! below is a minimal compatible assumption
-//! (see `docs/implementation-status.md`):
+//!:
 //!
 //! A bare-identifier property value (`Ref`, e.g. `text = title`) is a
 //! binding: resolving the tree substitutes the committed state value. All

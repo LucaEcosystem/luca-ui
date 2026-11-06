@@ -1,5 +1,5 @@
--- Luca UI 0.6 Alpha example: component-based navigation and accessibility.
--- Assumption syntax (see docs/implementation-status.md); component and entry
+-- Luca UI 1.0.2 Beta example: component-based navigation and accessibility.
+-- Assumption syntax (may change; see docs/language.md); component and entry
 -- names here are placeholders, NOT the locked vocabulary. Screens are
 -- components addressed by `id` — there are no routes in this model.
 App:

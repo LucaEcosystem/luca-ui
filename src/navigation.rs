@@ -1,9 +1,9 @@
-//! Component-based navigation for 0.6 Alpha (`compiler/navigation` in ARCHITECTURE).
+//! Component-based navigation (the navigation architectural role).
 //!
-//! Locked facts from `docs/SPEC.md` (decision 90): navigation is
+//! Locked design fact (decision 90): navigation is
 //! component-based; string-based routes are not the core navigation model.
 //! The navigation API shape is NOT locked, so this stack is a minimal
-//! compatible assumption (see `docs/implementation-status.md`):
+//! compatible assumption:
 //!
 //! - The stack holds component `id`s — the locked cross-component identity
 //!   mechanism — never route strings. There is no route table, no path

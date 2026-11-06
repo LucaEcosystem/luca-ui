@@ -1,12 +1,12 @@
 //! Declarative events for 0.5 Alpha: the interaction boundary.
 //!
-//! Locked facts from `docs/SPEC.md`: events are the interaction boundary
+//! Locked design facts: events are the interaction boundary
 //! between components and Luca Code state/logic; components change through
 //! state and events, never through component references or imperative
 //! operations; invalid declarations are source-located Luca errors. Event
 //! declaration and dispatch syntax are NOT locked, so the `events:` block
 //! and the rules below are a minimal compatible assumption
-//! (see `docs/implementation-status.md`).
+//!.
 //!
 //! Model: a component declares `event = handler` entries in an `events:`
 //! block, where the handler is a bare identifier naming Luca Code logic
