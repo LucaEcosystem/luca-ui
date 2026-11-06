@@ -6,6 +6,15 @@
 /editors/vscode/node_modules/
 # macOS metadata
 .DS_Store
+# Untracked junk artifacts (e.g. custom-icon resources carried by macOS copies)
+Icon?
+# Packaged extensions are attached to GitHub releases, not committed
+/editors/vscode/*.vsix
+# Local-only contributor records: these stay on each machine and are not
+# published to the repository (user-facing docs ship instead; see docs/).
+/docs/SPEC.md
+/docs/ARCHITECTURE.md
+/docs/implementation-status.md
 # Editor state
 .vscode/
 *.code-workspace
