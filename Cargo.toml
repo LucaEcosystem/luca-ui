@@ -1,8 +1,8 @@
 [package]
 name = "luca-ui"
-version = "1.0.0"
+version = "1.0.2"
 edition = "2021"
-description = "Luca UI 1.0 Beta — declarative UI layer on Luca Code (.lucu)"
+description = "Luca UI 1.0.2 Beta — declarative UI layer on Luca Code (.lucu)"
 license-file = "LICENSE"
 
 [dependencies]

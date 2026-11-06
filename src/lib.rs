@@ -1,4 +1,4 @@
-//! Luca UI 1.0 Beta — publication Beta (not stable 1.0).
+//! Luca UI 1.0.2 Beta (the 1.0 Beta product line).
 //!
 //! Scope: every locked 1.0 requirement with test evidence — minimal core
 //! library (App/Text/Button) with per-component validation, deterministic
@@ -11,8 +11,9 @@
 //! registered core names, generic elsewhere), generic `layout:`/`style:`
 //! entry blocks, `state:` literal blocks, `event = handler` entries,
 //! `transitions:` data blocks, `theme:` selection blocks, and
-//! bare-identifier bindings resolved against state. The full inventory and
-//! remaining open items are listed in `docs/implementation-status.md` §16–17.
+//! bare-identifier bindings resolved against state. The full component
+//! inventory and every remaining open item stay explicitly open in this
+//! release; nothing beyond the shipped behavior is claimed.
 
 pub mod accessibility;
 pub mod animation;
@@ -51,8 +52,8 @@ pub use testing::TestHarness;
 pub use style::Style;
 pub use themes::{Environment, SystemAppearance, Theme, ThemeMode};
 
-/// Product release label: `1.0 Beta` publication Beta. Not stable 1.0.
-pub const PRODUCT_VERSION: &str = "1.0 Beta";
+/// Package release label: `1.0.2 Beta` (the 1.0 Beta product line).
+pub const PRODUCT_VERSION: &str = "1.0.2 Beta";
 
 /// Parse and validate a `.lucu` source string into a component tree.
 pub fn parse(source: &str) -> Result<Component, LucaError> {

@@ -10,7 +10,7 @@ name: Release
 #     and skips only the Marketplace publish step.
 #
 # Tagging a Beta (from a clean checkout of main):
-#   git tag v1.0.0-beta && git push origin v1.0.0-beta
+#   git tag v1.0.2-beta && git push origin v1.0.2-beta
 on:
   push:
     tags:
@@ -53,7 +53,7 @@ jobs:
           stage="luca-ui-${tag}-${target}"
           mkdir -p "release/${stage}/examples"
           cp "target/release/luca-ui${{ runner.os == 'Windows' && '.exe' || '' }}" "release/${stage}/"
-          cp README.md "docs/RELEASE-NOTES-1.0-BETA.md" "release/${stage}/"
+          cp README.md "docs/RELEASE-NOTES.md" "release/${stage}/"
           cp examples/*.lucu "release/${stage}/examples/"
           tar -czf "release/${stage}.tar.gz" -C release "${stage}"
       - name: Upload binary tarball
@@ -104,11 +104,12 @@ jobs:
           merge-multiple: true
       - name: Bundle reproducible source package
         run: |
-          mkdir -p "source-stage/luca-ui-1.0-beta/Packages/Luca UI" "source-stage/luca-ui-1.0-beta/Packages/Luca Code"
-          git archive "${GITHUB_REF_NAME}" | tar -x -C "source-stage/luca-ui-1.0-beta/Packages/Luca UI"
-          cp -r "code-for-source-package/." "source-stage/luca-ui-1.0-beta/Packages/Luca Code/"
-          rm -rf "source-stage/luca-ui-1.0-beta/Packages/Luca Code/.git"
-          tar -czf release-assets/luca-ui-1.0.0-source.tar.gz -C source-stage luca-ui-1.0-beta
+          source_stage="source-stage/luca-ui-${GITHUB_REF_NAME}"
+          mkdir -p "${source_stage}/Packages/Luca UI" "${source_stage}/Packages/Luca Code"
+          git archive "${GITHUB_REF_NAME}" | tar -x -C "${source_stage}/Packages/Luca UI"
+          cp -r "code-for-source-package/." "${source_stage}/Packages/Luca Code/"
+          rm -rf "${source_stage}/Packages/Luca Code/.git"
+          tar -czf "release-assets/luca-ui-${GITHUB_REF_NAME}-source.tar.gz" -C source-stage "luca-ui-${GITHUB_REF_NAME}"
       - name: Checksums
         run: (cd release-assets && shasum -a 256 * > SHA256SUMS)
       - name: Create GitHub release
@@ -116,7 +117,7 @@ jobs:
         with:
           files: |
             release-assets/*
-          body_path: docs/RELEASE-NOTES-1.0-BETA.md
+          body_path: docs/RELEASE-NOTES.md
       - uses: actions/setup-node@v4
         with:
           node-version: 22
