@@ -13,7 +13,6 @@ Icon?
 # Local-only contributor records: these stay on each machine and are not
 # published to the repository (user-facing docs ship instead; see docs/).
 /docs/SPEC.md
-/docs/ARCHITECTURE.md
 /docs/implementation-status.md
 # Editor state
 .vscode/

@@ -1,4 +1,4 @@
-//! 0.3 Alpha: platform-independent layout/style representation and validation.
+//! 1.0.2 Beta: platform-independent layout/style representation and validation.
 //!
 //! Uses only design-locked facts: layout/styling belong to the declarative
 //! layer; the UI model is platform-independent with no backend concepts;
@@ -33,7 +33,10 @@ fn accepts_valid_layouts_and_styles() {
 
     // Blocks are leaf attachments: they never affect tree shape or identity.
     assert_eq!((tree.count(), tree.depth()), (5, 3));
-    assert_eq!(tree.ids(), vec!["app", "header", "title", "body", "greeting"]);
+    assert_eq!(
+        tree.ids(),
+        vec!["app", "header", "title", "body", "greeting"]
+    );
 
     // All scalar value kinds, including opaque references, are accepted.
     let tree = parse(
@@ -52,16 +55,28 @@ fn accepts_valid_layouts_and_styles() {
 fn rejects_invalid_layout_and_style_values() {
     let cases = [
         // Malformed entry values surface as ordinary Luca errors.
-        ("App:\n  layout:\n    gap = \"oops\n", "Unterminated string literal"),
+        (
+            "App:\n  layout:\n    gap = \"oops\n",
+            "Unterminated string literal",
+        ),
         ("App:\n  style:\n    tone = \"a\\qb\"\n", "Unknown escape"),
         ("App:\n  layout:\n    gap =\n", "Expected a value after '='"),
-        ("App:\n  style:\n    bad-prop = 1\n", "Invalid property name 'bad-prop'"),
+        (
+            "App:\n  style:\n    bad-prop = 1\n",
+            "Invalid property name 'bad-prop'",
+        ),
         // Call-shaped entries stay imperative and declarative-only.
         ("App:\n  layout:\n    gap = fit(1)\n", "Imperative"),
         ("App:\n  style:\n    hide = true\n", "Imperative"),
         // Duplicate entries within one block.
-        ("App:\n  layout:\n    gap = 1\n    gap = 2\n", "Duplicate 'gap' in `layout`"),
-        ("App:\n  style:\n    tone = \"a\"\n    tone = \"b\"\n", "Duplicate 'tone' in `style`"),
+        (
+            "App:\n  layout:\n    gap = 1\n    gap = 2\n",
+            "Duplicate 'gap' in `layout`",
+        ),
+        (
+            "App:\n  style:\n    tone = \"a\"\n    tone = \"b\"\n",
+            "Duplicate 'tone' in `style`",
+        ),
         // Same key across layout vs style vs props is fine (separate namespaces).
     ];
     for (src, fragment) in cases {
@@ -107,7 +122,8 @@ fn rejects_misplaced_and_duplicate_blocks() {
 #[test]
 fn blocks_do_not_pollute_identity_or_props() {
     // Block entries named `id`/`visible` are generic entries, not identity.
-    let tree = parse("App:\n  id = \"a\"\n  layout:\n    id = \"a\"\n    visible = true\n").unwrap();
+    let tree =
+        parse("App:\n  id = \"a\"\n  layout:\n    id = \"a\"\n    visible = true\n").unwrap();
     assert_eq!(tree.id(), Some("a"));
     assert_eq!(tree.ids(), vec!["a"]);
     // Component-level duplicate detection still applies to real props.

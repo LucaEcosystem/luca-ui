@@ -1,0 +1,127 @@
+name: Bug report
+description: Report a reproducible problem with Luca UI (CLI, parser, state, rendering, or the VS Code extension).
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. Please paste diagnostics **exactly** — `Error at line:column: message` wordings are frozen, so paraphrasing makes triage harder. Never include secrets or proprietary application code; a minimal synthetic snippet is enough.
+
+  - type: input
+    id: version
+    attributes:
+      label: Luca UI version
+      description: Run `luca-ui --version` and paste the output.
+      placeholder: luca-ui 1.0.2 Beta
+    validations:
+      required: true
+
+  - type: input
+    id: luca_code_version
+    attributes:
+      label: Luca Code version
+      description: Run `luca --version` (or `luca-code --version`) and paste the output.
+      placeholder: luca 1.0.3 Beta
+    validations:
+      required: false
+
+  - type: input
+    id: rust
+    attributes:
+      label: Rust version
+      description: Run `rustc --version` and paste the output.
+      placeholder: rustc 1.90.0
+    validations:
+      required: false
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options:
+        - macOS
+        - Linux
+        - Windows
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      description: Which part of Luca UI is affected?
+      options:
+        - CLI (`luca-ui`)
+        - Parser / diagnostics
+        - State / bindings
+        - Events / integration seam
+        - Text backend
+        - SVG visual backend / layout
+        - VS Code extension
+        - Documentation
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: Describe the problem in one or two sentences.
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Minimal reproduction
+      description: Paste the smallest `.lucu` file that reproduces the problem, plus any paired `.lucc` file if relevant. Use fenced code blocks.
+      placeholder: |
+        App:
+          id = "app"
+          Text:
+            id = "t"
+            text = "hi"
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Exact commands and what you did.
+      placeholder: |
+        1. cargo run -- check view.lucu
+        2. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What did you expect to happen?
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: Paste the exact error or warning text, or describe the wrong output.
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: docs
+    attributes:
+      label: Before submitting
+      options:
+        - label: I checked the docs under `docs/` and the diagnostics catalog.
+          required: false
+        - label: I searched existing issues and this is not a duplicate.
+          required: false
+        - label: This is not a security issue (see SECURITY.md for security reporting).
+          required: true

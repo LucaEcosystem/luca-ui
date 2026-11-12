@@ -1,13 +1,11 @@
-//! 0.8 Alpha: declarative transitions, first-class themes, system
+//! 1.0.2 Beta: declarative transitions, first-class themes, system
 //! appearance, and localization foundations.
 //!
 //! Timing defaults, theme token names, and resource formats are NOT locked
 //! and are NOT defined here — entries/tokens/tables are structural data
 //! only.
 
-use luca_ui::{
-    parse, Environment, Resources, SystemAppearance, ThemeMode,
-};
+use luca_ui::{parse, Environment, Resources, SystemAppearance, ThemeMode};
 
 fn example() -> luca_ui::Component {
     parse(&std::fs::read_to_string("examples/themes.lucu").unwrap()).unwrap()
@@ -41,7 +39,12 @@ fn gates_transitions_on_reduced_motion() {
     assert!(transitions.active(true).is_empty());
     let env = Environment::new(SystemAppearance::Light, true);
     assert!(env.reduced_motion);
-    assert!(header.transitions.as_ref().unwrap().active(env.reduced_motion).is_empty());
+    assert!(header
+        .transitions
+        .as_ref()
+        .unwrap()
+        .active(env.reduced_motion)
+        .is_empty());
 }
 
 #[test]
@@ -103,11 +106,17 @@ fn selects_themes_and_follows_system_appearance() {
     assert_eq!(theme.mode, ThemeMode::System);
     assert_eq!(theme.name, None);
     // Unknown modes and non-string names are Luca errors at the entry.
-    let msg = parse("App:\n  theme:\n    mode = sepia\n").unwrap_err().to_string();
+    let msg = parse("App:\n  theme:\n    mode = sepia\n")
+        .unwrap_err()
+        .to_string();
     assert!(msg.contains("Unknown theme mode 'sepia'"), "{msg}");
-    let msg = parse("App:\n  theme:\n    mode = 3\n").unwrap_err().to_string();
+    let msg = parse("App:\n  theme:\n    mode = 3\n")
+        .unwrap_err()
+        .to_string();
     assert!(msg.contains("Unknown theme mode"), "{msg}");
-    let msg = parse("App:\n  theme:\n    name = 3\n").unwrap_err().to_string();
+    let msg = parse("App:\n  theme:\n    name = 3\n")
+        .unwrap_err()
+        .to_string();
     assert!(msg.contains("Theme 'name' must be a string"), "{msg}");
 }
 

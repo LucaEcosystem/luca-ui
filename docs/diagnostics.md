@@ -1,10 +1,14 @@
 # Diagnostics catalog — Luca UI 1.0.2 Beta
 
 Every toolchain failure is a source-located Luca error rendered as
-`Error at line:column: message` (`luca_code::error::LucaError`). Luca UI
-produces errors only — no warnings. This catalog freezes the message shapes:
-`tests/diagnostics.rs` asserts each reachable message byte-for-byte, so any
-wording change is a breaking change requiring a version note.
+`Error at line:column: message` (`luca_code::error::LucaError`). The
+catalog freezes those message shapes: `tests/diagnostics.rs` asserts each
+reachable message byte-for-byte, so any wording change is a breaking change
+requiring a version note.
+
+The visual pipeline additionally emits **non-fatal render warnings** for
+recognized-but-invalid layout/style entries (see [Render warnings](#render-warnings));
+they never replace a structural error and never prevent rendering.
 
 Conventions: `line:column` is 1-based. Unless noted, the location is the
 offending declaration (prop key start, entry start, block start, or root).
@@ -30,6 +34,7 @@ offending declaration (prop key start, entry start, block start, or root).
 | P15 | `Imperative component operations are not supported; update state and allow the UI to react` | call line/value start | `show()`, `text = hide()` |
 | P16 | `Imperative component operation 'hide' is not supported; update state and allow the UI to react` | key start | `hide = true` |
 | P17 | `` `{block}` must belong to a component `` | root block | `layout:` at column 1 |
+| P18 | `Unexpected text after string literal: '{rest}'` | value start | `text = "a" "b"` |
 
 Defensive (in code, unreachable through `parse`; not asserted): `Component
 outside a parent component`, both `Inconsistent indentation` branches.
@@ -111,8 +116,33 @@ rejects both shapes first).
 |---|---|---|
 | F1 | `Luca UI source files must use the .lucu extension` | 1:1 |
 | F2 | `Could not read {path}: {os error}` | 1:1 |
+| F3 | `Luca Code source files must use the .lucc extension` | 1:1 |
+| F4 | `No paired Luca Code source found at {path}` | 1:1 |
+| F5 | `Event '{event}' on component '{id-or-name}' names handler '{handler}', which is not defined in the paired Luca Code source` | event entry |
+
+F5 is raised by `luca-ui check` only when the paired source has no imports,
+so the handler can be verified locally. With imports, the same situation is
+reported as an unverified note instead of an error.
+
+## Render warnings (`layout`, `style`, visual pipeline)
+
+These are not `LucaError`s. They appear as
+`Render warning at line:column: message` and never fail a render.
+
+| # | Message | Trigger |
+|---|---|---|
+| W1 | `Unknown layout direction "{text}"; expected "column" or "row"` | `direction` string outside the subset |
+| W2 | `Layout entry 'direction' must be str, found {kind}` | non-string `direction` |
+| W3 | `Unknown layout align "{text}"; expected "start", "center", "end", or "stretch"` | `align` string outside the subset |
+| W4 | `Layout entry 'align' must be str, found {kind}` | non-string `align` |
+| W5 | `Layout entry '{key}' must be a non-negative integer, found {kind}` | `gap`/`padding`/`width`/`height` |
+| W6 | `Style entry '{key}' must be a #rrggbb color, found "{text}"` | `background`/`color`/`border` |
+| W7 | `Style entry '{key}' must be str, found {kind}` | non-string color token |
+| W8 | `Style entry '{key}' must be a non-negative integer, found {kind}` | `radius`/`font_size` |
+
+Unknown entry names produce **no** warning: they stay opaque by design.
 
 ## Testing harness (`testing`)
 
 Reuses E1's shape (`No component with id '…'`) at the resolved root for
-`prop`/`text`/`visible`/`label` lookups.
+`prop`/`text`/`visible`/`label`/`bounds` lookups.

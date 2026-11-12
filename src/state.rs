@@ -1,4 +1,4 @@
-//! Declarative application state for 0.4 Alpha.
+//! Declarative application state for 1.0.2 Beta.
 //!
 //! Locked design facts: UI output is derived from application
 //! state and declared properties; state updates are batched; components are
@@ -49,7 +49,11 @@ impl StateBlock {
         column: usize,
     ) -> Result<Self, LucaError> {
         check_block_entries("state", component, &entries)?;
-        Ok(Self { entries, line, column })
+        Ok(Self {
+            entries,
+            line,
+            column,
+        })
     }
 }
 
@@ -79,6 +83,7 @@ pub struct State {
     order: Vec<String>,
     pending: HashMap<String, Value>,
     listeners: HashSet<String>,
+    key_listeners: HashMap<String, HashSet<String>>,
 }
 
 impl State {
@@ -133,9 +138,7 @@ impl State {
         // literals so collection needs no evaluation order.
         if let PropValue::Ref(name) = &entry.value {
             return Err(LucaError::new(
-                format!(
-                    "State initial values must be literals (found reference '{name}')"
-                ),
+                format!("State initial values must be literals (found reference '{name}')"),
                 entry.line,
                 entry.column,
             ));
@@ -180,7 +183,16 @@ impl State {
             v => v.value_type(),
         };
         self.order.push(name.clone());
-        self.entries.insert(name.clone(), StateEntry { name, declared, value: initial, line, column });
+        self.entries.insert(
+            name.clone(),
+            StateEntry {
+                name,
+                declared,
+                value: initial,
+                line,
+                column,
+            },
+        );
         Ok(())
     }
 
@@ -212,9 +224,10 @@ impl State {
     /// not implicitly convert to `dec` (conversion is `change` in Luca Code);
     /// this is the smallest consistent choice, recorded in the status docs.
     pub fn set(&mut self, name: &str, value: Value) -> Result<(), LucaError> {
-        let entry = self.entries.get(name).ok_or_else(|| {
-            LucaError::new(format!("'{name}' is not declared"), 1, 1)
-        })?;
+        let entry = self
+            .entries
+            .get(name)
+            .ok_or_else(|| LucaError::new(format!("'{name}' is not declared"), 1, 1))?;
         if value.is_collection() {
             return Err(LucaError::new(
                 format!("State '{name}' must be a scalar value in 0.4"),
@@ -257,11 +270,15 @@ impl State {
                 if let Some(entry) = self.entries.get_mut(&key) {
                     entry.value = value.clone();
                 }
-                let mut targets: Vec<&String> = self.listeners.iter().collect();
+                let mut targets: Vec<String> = self.listeners.iter().cloned().collect();
+                if let Some(key_targets) = self.key_listeners.get(&key) {
+                    targets.extend(key_targets.iter().cloned());
+                }
                 targets.sort();
+                targets.dedup();
                 for target in targets {
                     notifications.push(Notification {
-                        target: (*target).clone(),
+                        target,
                         key: key.clone(),
                         value: value.clone(),
                     });
@@ -276,14 +293,52 @@ impl State {
         self.listeners.insert(component_id.to_owned());
     }
 
+    /// Subscribe a component id to committed updates of one state variable.
+    ///
+    /// Key subscriptions are additive with [`State::subscribe`]: a component
+    /// that subscribes both ways still receives exactly one notification per
+    /// changed key. Key names do not have to exist yet.
+    pub fn subscribe_key(&mut self, component_id: &str, key: &str) {
+        self.key_listeners
+            .entry(key.to_owned())
+            .or_default()
+            .insert(component_id.to_owned());
+    }
+
     /// Remove one subscription; returns true when one existed.
     pub fn unsubscribe(&mut self, component_id: &str) -> bool {
         self.listeners.remove(component_id)
     }
 
-    /// True when the component id currently subscribes.
+    /// Remove one key-specific subscription; returns true when one existed.
+    pub fn unsubscribe_key(&mut self, component_id: &str, key: &str) -> bool {
+        let removed = self
+            .key_listeners
+            .get_mut(key)
+            .map(|targets| targets.remove(component_id))
+            .unwrap_or(false);
+        if self
+            .key_listeners
+            .get(key)
+            .map(|targets| targets.is_empty())
+            .unwrap_or(false)
+        {
+            self.key_listeners.remove(key);
+        }
+        removed
+    }
+
+    /// True when the component id currently subscribes to every update.
     pub fn is_subscribed(&self, component_id: &str) -> bool {
         self.listeners.contains(component_id)
+    }
+
+    /// True when the component id currently subscribes to `key`.
+    pub fn is_subscribed_to(&self, component_id: &str, key: &str) -> bool {
+        self.key_listeners
+            .get(key)
+            .map(|targets| targets.contains(component_id))
+            .unwrap_or(false)
     }
 
     /// Drop listeners whose component id no longer exists in the tree, so
@@ -292,6 +347,10 @@ impl State {
     pub fn prune(&mut self, tree: &Component) {
         let alive: HashSet<&str> = tree.ids().into_iter().collect();
         self.listeners.retain(|id| alive.contains(id.as_str()));
+        self.key_listeners.retain(|_, targets| {
+            targets.retain(|id| alive.contains(id.as_str()));
+            !targets.is_empty()
+        });
     }
 }
 
@@ -343,7 +402,11 @@ pub(crate) fn literal_to_value_checked(
                 line,
                 column,
             )),
-            _ => Err(LucaError::new(format!("Invalid value for {what}"), line, column)),
+            _ => Err(LucaError::new(
+                format!("Invalid value for {what}"),
+                line,
+                column,
+            )),
         },
     }
 }

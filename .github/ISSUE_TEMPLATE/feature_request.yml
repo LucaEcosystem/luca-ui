@@ -1,0 +1,69 @@
+name: Feature request
+description: Propose a new capability or behavior for Luca UI. Explain the user problem first.
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Luca UI is a declarative UI layer on Luca Code. Good requests describe the **user problem**, then the proposed behavior, and why it fits the declarative model: state-derived output, no imperative component operations, source-located diagnostics.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: Describe the user workflow or limitation you ran into.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+      description: What should Luca UI do? If you suggest syntax, show a small `.lucu` example and note which parts would be locked (●) versus assumption (◐).
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: What workarounds exist today, and why are they insufficient?
+    validations:
+      required: false
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - '.lucu language / syntax'
+        - Components / library
+        - State / bindings
+        - Events / integration seam
+        - Text backend
+        - SVG visual backend / layout
+        - CLI
+        - VS Code extension
+        - Documentation
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Links to docs, related issues, or design notes.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched existing issues and discussions; this is not a duplicate.
+          required: false
+        - label: I understand this project does not accept external code contributions (see CONTRIBUTING.md).
+          required: true

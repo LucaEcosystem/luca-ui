@@ -1,10 +1,11 @@
 # Styling, theming, and localization — 1.0.2 Beta
 
-> Luca UI **1.0.2 Beta**. This page covers the `layout:`, `style:`, `transitions:`, and `theme:` blocks plus the localization `Resources` API. Where the topic is honest about its limits, read: layout/style entry semantics, transition timing, theme tokens, and resource file formats are **not implemented** — the blocks exist, they are validated, and they are deliberately left semantics-free until the full design record lands.
+> Luca UI **1.0.2 Beta**. This page covers the `layout:`, `style:`, `transitions:`, and `theme:` blocks plus the localization `Resources` API. The visual pipeline interprets a documented **◐ assumption subset** of `layout:`/`style:` entries; unknown entries stay opaque. Transition timing, theme tokens, and resource file formats remain ○ not implemented.
 
 ## What you will learn
 
 - What each block declares, what the toolchain validates, and what it does **not** do.
+- The ◐ layout/style subset used by the static visual pipeline.
 - Accessibility in styling (reduced motion).
 - The built-in `Resources` localization lookup.
 
@@ -28,9 +29,39 @@ Rules (● enforced):
 - No duplicates, and imperative keys are rejected like everywhere else.
 - Entries resolve against state like component properties (bindings substitute committed values).
 
-What they do **not** do (○ open): entry names have **no global meaning**. No dimensions, no units, no defaults, no precedence, no inheritance, no responsive behavior — there is no grid engine or flex algorithm behind `gap = 2`. The blocks are validated containers awaiting layout/style **semantics** from the design record. Treat every entry as opaque data with a stable home in the tree and diagnostics.
+### ◐ What the visual pipeline interprets
 
-Why ship them at all? Two reasons: the *shape* of the declarative syntax is exercised and validated now, so moving names into real semantics later is a toolchain change — not a source break for files already written this way; and they flow through resolution and every backend honestly (the text backend prints them as data sections).
+`luca-ui render`, `build_visual`, and `TestHarness::compose()` interpret this subset. Everything else remains opaque data: accepted, preserved, and ignored by the visual layer.
+
+| `layout:` entry | Meaning |
+|---|---|
+| `direction = "column" \| "row"` | Main-axis stacking (default `column`). |
+| `gap` | Space between siblings on the main axis (default `0`). |
+| `padding` | Uniform inset around content (default `0`). |
+| `width`, `height` | Explicit size; otherwise intrinsic content size. The root defaults to the viewport. |
+| `align = "start" \| "center" \| "end" \| "stretch"` | Cross-axis alignment (default `start`); `stretch` fills the parent cross axis unless the child declares that axis. |
+
+| `style:` entry | Meaning |
+|---|---|
+| `background = "#rrggbb"` | Rectangle fill. |
+| `color = "#rrggbb"` | Text color. |
+| `border = "#rrggbb"` | Rectangle stroke. |
+| `radius` | Uniform corner radius in abstract units. |
+| `font_size` | Text size in abstract units (default `16`). |
+
+All numeric values are non-negative integers in abstract units. Colors accept six-digit hex only.
+
+An entry the visual layer recognizes but cannot interpret is a **render warning**, not a parse error. The view still renders with the default:
+
+```text
+Render warning at 4:5: Unknown layout direction "grid"; expected "column" or "row"
+```
+
+Unknown entry names produce no warning — opacity is the contract. `tone = "soft"` above is a perfectly valid opaque token.
+
+What is still **not** implemented (○ open): wrapping, clipping, scrolling, flex/grid algorithms, inheritance, responsive behavior, named colors, font shaping, theme-token resolution, and style precedence beyond “the component's own block.”
+
+Why ship the subset at all? It proves the declarative shape end to end without inventing a full layout engine: entries flow through resolution, produce deterministic geometry and paint commands, and can gain richer semantics later without changing the source shape.
 
 ## `transitions:` blocks
 
@@ -115,7 +146,13 @@ layout:
     .direction = "column"
 ```
 
-Layout **bounds** (computed rectangles) are not reported anywhere — they need dimension semantics that do not exist yet (○ open, explicitly deferred rather than silently assumed).
+The inspector remains a **declaration** snapshot. Computed bounds are available through the visual pipeline:
+
+```sh
+luca-ui render examples/visual.lucu --out target/visual.svg
+```
+
+or in Rust via `build_visual(...)` / `TestHarness::bounds(id)` / `TestHarness::hit_test(point)` (see [Rendering](rendering.md) and [Testing](testing.md)).
 
 ## Where next
 

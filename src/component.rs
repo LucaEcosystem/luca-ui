@@ -25,7 +25,7 @@ use crate::style::Style;
 use crate::themes::Theme;
 use crate::LucaError;
 
-/// A scalar property value. 0.1 supports only literals plus a bare
+/// A scalar property value. the declaration layer supports only literals plus a bare
 /// identifier reference (opaque; binding resolution is deferred).
 #[derive(Debug, Clone, PartialEq)]
 pub enum PropValue {
@@ -131,10 +131,7 @@ impl Component {
                     };
                     if taken {
                         return Err(LucaError::new(
-                            format!(
-                                "Duplicate '{block}' block on component '{}'",
-                                self.name
-                            ),
+                            format!("Duplicate '{block}' block on component '{}'", self.name),
                             child.line,
                             child.column,
                         ));
@@ -220,10 +217,13 @@ impl Component {
 
     /// The `id` property value, if present.
     pub fn id(&self) -> Option<&str> {
-        self.props.iter().find(|p| p.key == "id").and_then(|p| match &p.value {
-            PropValue::Str(s) => Some(s.as_str()),
-            _ => None,
-        })
+        self.props
+            .iter()
+            .find(|p| p.key == "id")
+            .and_then(|p| match &p.value {
+                PropValue::Str(s) => Some(s.as_str()),
+                _ => None,
+            })
     }
 
     /// Find a component by `id` (depth-first).
@@ -241,7 +241,12 @@ impl Component {
 
     /// Depth of the tree; a single node has depth 1.
     pub fn depth(&self) -> usize {
-        1 + self.children.iter().map(Component::depth).max().unwrap_or(0)
+        1 + self
+            .children
+            .iter()
+            .map(Component::depth)
+            .max()
+            .unwrap_or(0)
     }
 
     /// All `id` values in depth-first order (for test identifiers).
@@ -266,10 +271,7 @@ impl Component {
         self.validate_into(&mut seen)
     }
 
-    fn validate_into(
-        &self,
-        seen: &mut HashMap<String, (usize, usize)>,
-    ) -> Result<(), LucaError> {
+    fn validate_into(&self, seen: &mut HashMap<String, (usize, usize)>) -> Result<(), LucaError> {
         let mut keys: HashMap<&str, (usize, usize)> = HashMap::new();
         for prop in &self.props {
             if let Some((line, column)) = keys.get(prop.key.as_str()) {
@@ -336,7 +338,7 @@ impl Component {
                     }
                 },
                 "label" => match &prop.value {
-                    // Accessibility labels are core; 0.1 assumes a string.
+                    // Accessibility labels are core; the core set assumes a string.
                     PropValue::Str(_) => {}
                     // A binding defers the str check to resolution time.
                     PropValue::Ref(_) => {}

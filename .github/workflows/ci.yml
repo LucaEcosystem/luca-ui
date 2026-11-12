@@ -29,14 +29,34 @@ jobs:
           repository: LucaEcosystem/luca-code
           path: Packages/Luca Code
       - uses: dtolnay/rust-toolchain@stable
-      - name: Tests
-        run: cargo test
+      - name: Format
+        run: cargo fmt --check
+      - name: Tests (all targets)
+        run: cargo test --all-targets --all-features
       - name: Clippy (deny warnings)
         run: cargo clippy --all-targets --all-features -- -D warnings
+      - name: Documentation
+        run: cargo doc --no-deps
       - name: Example smoke
         run: |
           cargo run --quiet -- examples/hello.lucu
+          cargo run --quiet -- examples/declarations.lucu
+          cargo run --quiet -- examples/layout.lucu
+          cargo run --quiet -- examples/state.lucu
+          cargo run --quiet -- examples/events.lucu
+          cargo run --quiet -- examples/navigation.lucu
+          cargo run --quiet -- examples/themes.lucu
+          cargo run --quiet -- check examples/events.lucu
           cargo run --quiet --example render
+          cargo run --quiet --example localize
+      - name: Visual smoke (SVG)
+        shell: bash
+        run: |
+          cargo run --quiet -- render examples/visual.lucu --out target/visual.svg
+          test -s target/visual.svg
+          head -c 4 target/visual.svg | grep -q '<svg'
+      - name: Release build
+        run: cargo build --release
 
   extension:
     name: VS Code extension (ubuntu-latest)

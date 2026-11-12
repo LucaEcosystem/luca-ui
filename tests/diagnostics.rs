@@ -1,4 +1,4 @@
-//! 0.9 Alpha: stable diagnostics — every reachable message asserted
+//! 1.0.2 Beta: stable diagnostics — every reachable message asserted
 //! byte-for-byte against `docs/diagnostics.md`. Any wording change breaks
 //! these tests on purpose.
 
@@ -11,14 +11,26 @@ fn exact(src: &str) -> String {
 
 #[test]
 fn parse_and_structure_messages_are_stable() {
-    assert_eq!(exact(""), "Error at 1:1: Expected a component, found empty file");
+    assert_eq!(
+        exact(""),
+        "Error at 1:1: Expected a component, found empty file"
+    );
     assert_eq!(
         exact("  App:\n"),
         "Error at 1:3: Root component must start at column 1"
     );
-    assert_eq!(exact("id = \"x\"\n"), "Error at 1:1: Property outside a component");
-    assert_eq!(exact(":\n"), "Error at 1:1: Expected a component name before ':'");
-    assert_eq!(exact("123:\n"), "Error at 1:1: Invalid component name '123'");
+    assert_eq!(
+        exact("id = \"x\"\n"),
+        "Error at 1:1: Property outside a component"
+    );
+    assert_eq!(
+        exact(":\n"),
+        "Error at 1:1: Expected a component name before ':'"
+    );
+    assert_eq!(
+        exact("123:\n"),
+        "Error at 1:1: Invalid component name '123'"
+    );
     assert_eq!(
         exact("App\n"),
         "Error at 1:1: Expected 'Name:' or 'key = value', found 'App'"
@@ -148,21 +160,21 @@ fn state_and_binding_messages_are_stable() {
     .unwrap_err()
     .to_string();
     assert_eq!(err, "Error at 6:7: Duplicate state 'a' (first at 3:5)");
-    let mut state =
-        State::from_tree(&parse("App:\n  state:\n    visits = 2\n").unwrap()).unwrap();
+    let mut state = State::from_tree(&parse("App:\n  state:\n    visits = 2\n").unwrap()).unwrap();
     assert_eq!(
-        state.set("visits", Value::Str("x".to_owned())).unwrap_err().to_string(),
+        state
+            .set("visits", Value::Str("x".to_owned()))
+            .unwrap_err()
+            .to_string(),
         "Error at 3:5: Expected int, found str for state 'visits'"
     );
     assert_eq!(
         state.set("missing", Value::Int(1)).unwrap_err().to_string(),
         "Error at 1:1: 'missing' is not declared"
     );
-    let err = State::from_tree(
-        &parse("App:\n  state:\n    n = 9999999999999999999999\n").unwrap(),
-    )
-    .unwrap_err()
-    .to_string();
+    let err = State::from_tree(&parse("App:\n  state:\n    n = 9999999999999999999999\n").unwrap())
+        .unwrap_err()
+        .to_string();
     assert_eq!(
         err,
         "Error at 3:5: Invalid number '9999999999999999999999' for state 'n'"
@@ -180,8 +192,9 @@ fn state_and_binding_messages_are_stable() {
         resolve_tree(&tree, &state).unwrap_err().to_string(),
         "Error at 2:3: Invalid number '9999999999999999999999'"
     );
-    let tree = parse("App:\n  state:\n    x = \"a\"\n    y = \"a\"\n  id = x\n  Text:\n    id = y\n")
-        .unwrap();
+    let tree =
+        parse("App:\n  state:\n    x = \"a\"\n    y = \"a\"\n  id = x\n  Text:\n    id = y\n")
+            .unwrap();
     let state = State::from_tree(&tree).unwrap();
     assert_eq!(
         resolve_tree(&tree, &state).unwrap_err().to_string(),
@@ -197,18 +210,25 @@ fn state_and_binding_messages_are_stable() {
 
 #[test]
 fn routing_navigation_and_harness_messages_are_stable() {
-    let tree = parse("App:\n  id = \"a\"\n  Button:\n    id = \"b\"\n    events:\n      tap = go\n")
-        .unwrap();
+    let tree =
+        parse("App:\n  id = \"a\"\n  Button:\n    id = \"b\"\n    events:\n      tap = go\n")
+            .unwrap();
     assert_eq!(
-        luca_ui::dispatch(&tree, "missing", "tap").unwrap_err().to_string(),
+        luca_ui::dispatch(&tree, "missing", "tap")
+            .unwrap_err()
+            .to_string(),
         "Error at 1:1: No component with id 'missing'"
     );
     assert_eq!(
-        luca_ui::dispatch(&tree, "a", "tap").unwrap_err().to_string(),
+        luca_ui::dispatch(&tree, "a", "tap")
+            .unwrap_err()
+            .to_string(),
         "Error at 1:1: Component 'a' declares no events"
     );
     assert_eq!(
-        luca_ui::dispatch(&tree, "b", "swipe").unwrap_err().to_string(),
+        luca_ui::dispatch(&tree, "b", "swipe")
+            .unwrap_err()
+            .to_string(),
         "Error at 5:5: Component 'b' declares no event 'swipe'"
     );
     assert_eq!(
@@ -231,7 +251,9 @@ fn routing_navigation_and_harness_messages_are_stable() {
         "Error at 1:1: No component with id 'missing'"
     );
     assert_eq!(
-        luca_ui::seam::load_file(std::path::Path::new("x.lucc")).unwrap_err().to_string(),
+        luca_ui::seam::load_file(std::path::Path::new("x.lucc"))
+            .unwrap_err()
+            .to_string(),
         "Error at 1:1: Luca UI source files must use the .lucu extension"
     );
 }

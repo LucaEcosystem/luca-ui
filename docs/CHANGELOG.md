@@ -7,24 +7,85 @@ guides under `docs/`.
 
 ## 1.0.2 Beta (`PRODUCT_VERSION = "1.0.2 Beta"`, package `1.0.2`)
 
-Documentation and release-labeling release on the 1.0 Beta line; **no
-language behavior changed**.
+The 1.0.2 Beta drop: the documentation overhaul plus the first static visual
+rendering, a stronger Luca Code seam, and `check`/`render` CLI commands.
 
-- Package version bumped to `1.0.2`; `PRODUCT_VERSION` reads `1.0.2 Beta`.
+### Added — visual rendering
+
+- **Static SVG visual backend** (`SvgBackend`, `src/backends/svg.rs`): a
+  deterministic, dependency-free snapshot renderer over a flat display list.
+  Emits a self-contained document beginning with `<svg` (with `xmlns`,
+  `width`, `height`, `viewBox`), escaped text, `<rect>`/`<text>` primitives.
+  No interaction, animation, fonts, images, clipping, or accessibility tree.
+- **Layout/style assumption specs** (`LayoutSpec`, `StyleSpec`, `Color`):
+  the documented ◐ subset — `direction`, `gap`, `padding`, `width`, `height`,
+  `align` and `background`, `color`, `border`, `radius`, `font_size` with
+  `#rrggbb` colors. Unknown entries stay opaque (accepted, preserved,
+  ignored); recognized-but-invalid values produce non-fatal
+  `RenderDiagnostic` warnings instead of parse errors.
+- **Layout engine** (`src/layout_engine.rs`): column/row stacking, uniform
+  padding, main-axis gap, cross-axis alignment (start/center/end/stretch),
+  explicit or intrinsic sizes, and approximate text metrics
+  (`font_size × 0.6` per character, `font_size × 1.2` per line). Hidden
+  subtrees are excluded before measurement.
+- **Paint + pipeline** (`src/paint.rs`, `src/pipeline.rs`): a flat
+  `DisplayList` (rect/text commands in deterministic paint order) and
+  `build_visual`, which turns a resolved tree into a `Visual` (layout tree,
+  display list, diagnostics).
+- **Static hit testing** (`src/input.rs`): `hit_test`, `hit_test_id`, and
+  `click_target` (nearest identified ancestor). Reports identity only; it does
+  not dispatch events or execute handlers.
+- **Geometry** (`src/geometry.rs`): platform-independent `Point`, `Size`,
+  `Rect`.
+
+### Added — integration seam
+
+- `load_logic`, `run_logic_file`, `paired_logic_path`, `load_paired`,
+  `declared_handlers`, `check_handlers`, `HandlerDeclarations`,
+  `HandlerCheck`, `MissingHandler`. Handler validation is declaration-only
+  (public lexer/parser/AST); imports are reported as unverified.
+- Key-aware state subscriptions: `State::subscribe_key`, `unsubscribe_key`,
+  `is_subscribed_to`, with key-aware `flush` and `prune`.
+
+### Added — tooling
+
+- CLI `check` and `render` subcommands. `check` validates the whole static
+  picture and enforces locally-declared handlers; `render` writes a static
+  SVG snapshot to stdout or `--out`, with `--width`/`--height`.
+- `TestHarness` gained `click`, `visual`, `visual_default`, `bounds`,
+  `hit_test`, and `compose`.
+- `examples/visual.lucu` and `examples/visual.rs`; `tests/visual.rs`
+  (visual foundation) and `tests/cli.rs` (binary-level CLI).
+
+### Fixed
+
+- Parser: trailing text after a string literal is now an error; backslash
+  parity in escape handling corrected. Six regression tests.
+- `TextBackend::render` clears prior output so repeated renders cannot leak
+  stale lines.
+- Stale 0.x Alpha headers updated; wrong Luca Code links corrected.
+- Removed the empty `compiler/`, `runtime/`, and `std/` scaffolding
+  directories.
+
+### Documentation and packaging
+
+- Package version `1.0.2`; `PRODUCT_VERSION` reads `1.0.2 Beta`.
 - Documentation overhaul: a user-facing guide set under `docs/`
   (getting started, `.lucu` language reference, components, state and
   events, testing, rendering, styling/theming/localization, examples
-  index, CLI reference, plus a docs index) with verified outputs for
-  every snippet; the root README is a rewritten landing page.
+  index, CLI reference, architecture, plus a docs index) with verified
+  outputs for every snippet; the root README is a rewritten landing page.
 - VS Code extension updated to 1.0.2 with an expanded README
   (settings, troubleshooting, Marketplace-style install paths).
-- Example headers and the `localize` example wording refreshed for the
-  1.0.2 Beta release state.
+- Root `CHANGELOG.md`, `CONTRIBUTING.md`, `SECURITY.md`,
+  `CODE_OF_CONDUCT.md`, GitHub issue/PR templates, and a refreshed
+  `docs/RELEASE-NOTES.md`.
 - `tests/compatibility.rs` now compares the two products' release labels
   at generation level (shared `1.0` prefix) so patch releases within the
   generation stay green.
 
-No diagnostics wording changed; the frozen catalog is unchanged.
+No frozen structural diagnostics wording changed; new render warnings cover
+the visual assumption subset only.
 
 ## 1.0 Beta (initial publication, `PRODUCT_VERSION = "1.0 Beta"`, package `1.0.0`)
 

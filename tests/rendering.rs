@@ -1,4 +1,4 @@
-//! 0.7 Alpha: renderer contract tests.
+//! 1.0.2 Beta: renderer contract tests.
 //!
 //! The contract (see `rendering`): one resolved root per call; visible
 //! nodes depth-first, parents first; `visible == false` subtrees skipped;
@@ -23,7 +23,8 @@ impl RecordingRenderer {
             return;
         }
         let label = luca_ui::describe_resolved(node).label;
-        self.visits.push((node.name.clone(), node.id.clone(), depth, label));
+        self.visits
+            .push((node.name.clone(), node.id.clone(), depth, label));
         for child in &node.children {
             self.visit(child, depth + 1);
         }
@@ -75,22 +76,19 @@ fn contract_holds_for_every_backend() {
     recording.render(&resolved).unwrap();
     let names: Vec<&str> = recording.visits.iter().map(|v| v.0.as_str()).collect();
     assert_eq!(names, vec!["App", "Header", "Text", "Footer", "Text"]);
-    let ids: Vec<&str> =
-        recording.visits.iter().map(|v| v.1.as_deref().unwrap()).collect();
+    let ids: Vec<&str> = recording
+        .visits
+        .iter()
+        .map(|v| v.1.as_deref().unwrap())
+        .collect();
     assert_eq!(ids, vec!["app", "header", "title", "footer", "scale"]);
     let depths: Vec<usize> = recording.visits.iter().map(|v| v.2).collect();
     assert_eq!(depths, vec![0, 1, 2, 1, 2]);
     // No visit ever exposes preview/sneak: the false subtree is skipped.
     assert!(!ids.contains(&"preview") && !ids.contains(&"sneak"));
     // Labels travel with visits (explicit on App, inferred on title).
-    assert_eq!(
-        recording.visits[0].3.as_deref(),
-        Some("Demo app")
-    );
-    assert_eq!(
-        recording.visits[2].3.as_deref(),
-        Some("Hello, Luca!")
-    );
+    assert_eq!(recording.visits[0].3.as_deref(), Some("Demo app"));
+    assert_eq!(recording.visits[2].3.as_deref(), Some("Hello, Luca!"));
 }
 
 #[test]
@@ -104,8 +102,21 @@ fn rendering_derives_from_state() {
     let resolved = resolve_tree(&tree, &state).unwrap();
     let output = TextBackend::render_to_string(&resolved).unwrap();
     assert!(output.contains("Preview id=\"preview\""), "{output}");
-    assert!(output.contains(".text = \"You should not see this\""), "{output}");
+    assert!(
+        output.contains(".text = \"You should not see this\""),
+        "{output}"
+    );
     assert!(output.contains("label=\"Hi!\""), "{output}");
+}
+
+#[test]
+fn reusing_text_backend_replaces_previous_output() {
+    let (_, _, resolved) = resolved_example();
+    let mut backend = TextBackend::new();
+    backend.render(&resolved).unwrap();
+    let first = backend.output();
+    backend.render(&resolved).unwrap();
+    assert_eq!(backend.output(), first);
 }
 
 #[test]

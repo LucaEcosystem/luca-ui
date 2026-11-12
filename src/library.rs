@@ -5,7 +5,7 @@
 //! cross-platform; they adapt to the target platform while retaining the
 //! shared API; platform-specific APIs live outside the core vocabulary.
 //! The component *inventory* is NOT locked (it must follow the complete
-//! design record), so this registry holds the 0.9 minimal core only — the
+//! design record), so this registry holds the minimal core only — the
 //! container, display, and action surface exercised by the shipped examples
 //! and tests — and is explicitly extensible
 //!.
@@ -30,8 +30,7 @@ pub struct CoreComponent {
 
 impl CoreComponent {
     /// Locked keys every core component supports, sorted alphabetically.
-    pub const LOCKED_PROPS: &'static [&'static str] =
-        &["disabled", "id", "label", "visible"];
+    pub const LOCKED_PROPS: &'static [&'static str] = &["disabled", "id", "label", "visible"];
 
     /// True for locked keys and listed generic props alike.
     pub fn supports(&self, key: &str) -> bool {
@@ -47,7 +46,7 @@ impl CoreComponent {
     }
 }
 
-/// The 0.9 minimal core: application root, labeled text display, and
+/// The minimal core: application root, labeled text display, and
 /// labeled action with routed events. Cross-platform by construction —
 /// no entry carries platform meaning; backends adapt presentation.
 pub const CORE_COMPONENTS: &[CoreComponent] = &[

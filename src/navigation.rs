@@ -36,7 +36,10 @@ impl<'a> Navigator<'a> {
                 tree.column,
             ));
         }
-        Ok(Self { tree, stack: vec![initial_id.to_owned()] })
+        Ok(Self {
+            tree,
+            stack: vec![initial_id.to_owned()],
+        })
     }
 
     /// Id of the current screen (always present).
@@ -84,8 +87,10 @@ impl<'a> Navigator<'a> {
                 self.tree.column,
             ));
         }
-        *self.stack.last_mut().expect("navigation stack is never empty") =
-            component_id.to_owned();
+        *self
+            .stack
+            .last_mut()
+            .expect("navigation stack is never empty") = component_id.to_owned();
         Ok(())
     }
 }

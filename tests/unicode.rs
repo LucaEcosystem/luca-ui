@@ -14,11 +14,15 @@ fn render(source: &str) -> String {
 
 #[test]
 fn preserves_accented_latin_text() {
-    let tree = parse("App:\n  id = \"app\"\n  Text:\n    id = \"t\"\n    text = \"héllo\"\n").unwrap();
+    let tree =
+        parse("App:\n  id = \"app\"\n  Text:\n    id = \"t\"\n    text = \"héllo\"\n").unwrap();
     let text = tree.find_by_id("t").unwrap();
     let prop = text.props.iter().find(|p| p.key == "text").unwrap();
     assert_eq!(prop.value.display_text(), "\"héllo\"");
-    assert!(render("App:\n  id = \"app\"\n  Text:\n    id = \"t\"\n    text = \"héllo\"\n").contains("héllo"));
+    assert!(
+        render("App:\n  id = \"app\"\n  Text:\n    id = \"t\"\n    text = \"héllo\"\n")
+            .contains("héllo")
+    );
 }
 
 #[test]
@@ -27,7 +31,12 @@ fn preserves_non_latin_scripts_across_lines() {
     let tree = parse(source).unwrap();
     let jp = tree.find_by_id("jp").unwrap();
     assert_eq!(
-        jp.props.iter().find(|p| p.key == "text").unwrap().value.display_text(),
+        jp.props
+            .iter()
+            .find(|p| p.key == "text")
+            .unwrap()
+            .value
+            .display_text(),
         "\"こんにちは\""
     );
     let rendered = render(source);
@@ -42,7 +51,12 @@ fn preserves_unicode_around_multiline_delimiters() {
     assert!(tree.find_by_id("app").is_some());
     let text = tree.find_by_id("t").unwrap();
     assert_eq!(
-        text.props.iter().find(|p| p.key == "text").unwrap().value.display_text(),
+        text.props
+            .iter()
+            .find(|p| p.key == "text")
+            .unwrap()
+            .value
+            .display_text(),
         "\"après [[ ]] fin\""
     );
 }

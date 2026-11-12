@@ -3,10 +3,14 @@
 > Luca UI **1.0.2 Beta**. Command-line behavior on this page is implemented and tested.
 
 ```sh
-Usage: luca-ui <view.lucu> | luca-ui inspect <view.lucu>
+Usage:
+  luca-ui <view.lucu>
+  luca-ui check <view.lucu>
+  luca-ui render <view.lucu> [--out <file.svg>] [--width <n>] [--height <n>]
+  luca-ui inspect <view.lucu>            (debug builds only)
 
-Validate a Luca UI file and print its component tree, or (debug builds
-only) inspect tree, state, and layout declarations.
+Validate a Luca UI file and print its component tree; check paired Luca Code
+handlers and visual diagnostics; or render a static SVG snapshot.
 
 Options:
   --help     Show this help and exit
@@ -14,6 +18,8 @@ Options:
 
 Examples:
   luca-ui hello.lucu
+  luca-ui check hello.lucu
+  luca-ui render hello.lucu --out hello.svg --width 480 --height 320
   luca-ui inspect hello.lucu
 ```
 
@@ -49,6 +55,55 @@ luca-ui examples/lorem.lucu
 Error at 1:1: Could not read examples/lorem.lucu: No such file or directory (os error 2)
 ```
 
+## `luca-ui check <view.lucu>` — validate the whole static picture
+
+`check` parses, declares state, resolves bindings, builds the visual, prints render warnings, and (when a sibling `.lucc` file exists) checks declared event handlers against Luca Code's own parser.
+
+```sh
+luca-ui check examples/visual.lucu
+```
+
+```text
+OK: examples/visual.lucu
+```
+
+Render warnings are printed but do **not** fail the command:
+
+```text
+Render warning at 4:5: Unknown layout direction "grid"; expected "column" or "row"
+OK: warnings.lucu
+```
+
+Handler policy is deliberately honest:
+
+- **No paired `.lucc` file** — prints a note and does not fail; handlers were not checked.
+- **Local declarations only** (no imports) — a missing handler is an error, exit `1`, with the handler's source location.
+- **Imports present** — a missing local name is reported as *unverified*, not an error, because it may live in an imported module.
+
+```text
+Note: handler 'go' on component 'visit' was not found locally; the paired source imports modules, so it is unverified
+```
+
+`check` runs no handlers and changes no state.
+
+## `luca-ui render <view.lucu>` — static SVG snapshot
+
+```sh
+luca-ui render examples/visual.lucu --out target/visual.svg --width 320 --height 200
+```
+
+Options:
+
+| Option | Meaning |
+|---|---|
+| `--out`, `-o <file.svg>` | Write the document to a file instead of standard output. |
+| `--width <n>` | Document width in abstract units (default `320`). |
+| `--height <n>` | Document height in abstract units (default `240`). |
+
+The output is a deterministic, self-contained SVG document starting with `<svg` (see [Rendering](rendering.md)). Render warnings go to standard error; the SVG itself is never mixed with warnings. Invalid dimensions and unknown options exit `2`.
+
+This is a **static snapshot**: no interaction, animation, fonts, or accessibility tree.
+
 ## `luca-ui inspect <view.lucu>` — development inspector (debug builds only)
 
 ```sh
@@ -81,8 +136,8 @@ The inspect snapshot shows three read-only sections:
 
 ## What `inspect` does not show
 
-- **Layout bounds** (computed rectangles/sizes): ○ not implemented — they need dimension semantics the model does not define yet. The snapshot shows the declared entries that bounds would one day derive from, and says nothing more.
-- **Resolved output**: `inspect` reads declarations; use the text backend ([Rendering](rendering.md)) or `TestHarness::render()` ([Testing](testing.md)) for resolved views.
+- **Computed layout bounds**: use `luca-ui render`, `build_visual`, or `TestHarness::bounds()` — the inspector stays a declaration snapshot.
+- **Resolved output**: `inspect` reads declarations; use the text backend ([Rendering](rendering.md)) or `TestHarness::render()` ([Testing](testing.md)).
 
 ## Common exit paths
 
@@ -91,6 +146,8 @@ The inspect snapshot shows three read-only sections:
 | File missing / unreadable | `Error at 1:1: Could not read <path>: …`, exit 1 |
 | Non-`.lucu` extension | `Error at 1:1: Luca UI source files must use the .lucu extension`, exit 1 |
 | Any parse/validation failure | `Error at line:column: message`, exit 1 |
-| No argument | usage text, exit 2 |
+| Missing locally-declared handler | `Error at line:column: Event '…' on component '…' names handler '…'…`, exit 1 |
+| Render warnings only | warnings on stdout (`check`) or stderr (`render`), exit 0 |
+| Invalid usage / dimension | usage text, exit 2 |
 
-All error wordings are frozen in the [diagnostics catalog](diagnostics.md).
+All error wordings are frozen in the [diagnostics catalog](diagnostics.md). Render warnings are new and non-fatal.

@@ -1,7 +1,8 @@
 -- Luca UI 1.0.2 Beta example: platform-independent layout and styling.
--- Assumption syntax (may change; see docs/language.md); block and entry
--- names here are placeholders, NOT the locked vocabulary. Entry names carry
--- no locked meaning, and no dimensions, defaults, or precedence are defined.
+-- The block syntax is an assumption (may change; see docs/language.md). The
+-- visual pipeline interprets a documented ◐ subset: here `gap`/`direction`
+-- have visual meaning, while `tone`/`emphasis` stay opaque tokens. See
+-- docs/styling-theming.md and docs/rendering.md.
 App:
   id = "app"
   visible = true

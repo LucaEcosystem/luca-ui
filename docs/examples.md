@@ -1,6 +1,6 @@
 # Examples — 1.0.2 Beta
 
-> Luca UI **1.0.2 Beta**. Eight `.lucu` examples (two with paired `.lucc` logic) and two Rust examples ship in [`examples/`](../examples). Every output below was captured by actually running the example with this release. Each example also runs in CI (`tests/examples.rs` renders every shipped `.lucu` file through the text backend).
+> Luca UI **1.0.2 Beta**. Nine `.lucu` examples (two with paired `.lucc` logic) and three Rust examples ship in [`examples/`](../examples). Every output below was captured by actually running the example with this release. Each `.lucu` example also runs in CI (`tests/examples.rs` renders every shipped `.lucu` file through the text backend; the SVG smoke test renders `visual.lucu`).
 
 Run any of them with:
 
@@ -14,12 +14,13 @@ cargo run -- examples/<name>.lucu
 |---|---|
 | [`hello.lucu`](../examples/hello.lucu) | Smallest correct tree (with paired `hello.lucc`) |
 | [`declarations.lucu`](../examples/declarations.lucu) | Nesting, ids, locked props on several components |
-| [`layout.lucu`](../examples/layout.lucu) | `layout:`/`style:` blocks (data, validated structurally) |
+| [`layout.lucu`](../examples/layout.lucu) | `layout:`/`style:` blocks, including the ◐ visual subset and opaque entries |
 | `state.lucu` | `state:` blocks + bare-identifier bindings |
 | `events.lucu` + `events.lucc` | Event routing to Luca Code handler names |
 | `navigation.lucu` | Component-stack navigation shape + labels |
 | `themes.lucu` | `transitions:`, named/pinned `theme:` blocks |
 | `render.lucu` (via `cargo run --example render`) | The text backend: resolution, labels, visibility skip |
+| `visual.lucu` (via `cargo run --example visual` or `luca-ui render`) | The static SVG backend: layout, paint, colors, text |
 | `localize.rs` (via `cargo run --example localize`) | Built-in `Resources` exact-locale lookup |
 
 ---
@@ -102,7 +103,7 @@ App (5:1) id="app"
       .visible = true
 ```
 
-Blocks appear as sections on the component that owns them. An empty block (like `Body`'s `layout:`) is valid. Entry names carry no global meaning — see [Styling and theming](styling-theming.md).
+Blocks appear as sections on the component that owns them. An empty block (like `Body`'s `layout:`) is valid. `gap` and `direction` belong to the documented ◐ visual subset; `tone` and `emphasis` are opaque tokens. See [Styling and theming](styling-theming.md).
 
 ## `state.lucu` — state and bindings
 
@@ -229,6 +230,25 @@ App (7:1) id="app"
 ```
 
 `mode = system` follows platform appearance; `Demo dark` pins dark. The `transitions:` entries are data only (no timing semantics yet; reduced-motion gates them off), and `Detail`'s empty `transitions:` block shows an empty set is valid.
+
+## `visual.lucu` — static SVG snapshot (`cargo run --example visual`)
+
+```sh
+cargo run --example visual                          # SVG on standard output
+# or: luca-ui render examples/visual.lucu --out visual.svg --width 320 --height 200
+```
+
+```text
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="200" viewBox="0 0 320 200">
+<rect x="0" y="0" width="320" height="200" fill="#101418" stroke="#30363d" rx="8"/>
+<rect x="12" y="12" width="296" height="32" fill="#1f6feb" rx="4"/>
+<text x="18" y="34" font-size="16">Luca UI visual snapshot</text>
+<text x="12" y="68" font-size="16">Hello, Luca!</text>
+<text x="140" y="66" font-size="12" fill="#8b949e">Static SVG</text>
+</svg>
+```
+
+What the snapshot demonstrates: the root fills the viewport (`320×200`), the column stack uses `gap = 8` and `padding = 12`, the header stretches across the cross axis, and the body is a row with centered cross-axis alignment. Text sizes come from `font_size`; positions come from the approximate ◐ cell metrics. Styles do **not** inherit: each node paints only its own `style:` block. The output is static — no interaction, fonts, or accessibility tree.
 
 ## `render.rs` — the text backend (`cargo run --example render`)
 

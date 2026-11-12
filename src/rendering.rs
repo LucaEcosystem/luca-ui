@@ -22,9 +22,71 @@
 //! the line format of `TextBackend` are minimal assumptions, not design
 //!.
 
+use std::fmt;
+
 use luca_code::types::Value;
 
+use crate::geometry::Size;
+use crate::paint::DisplayList;
 use crate::{describe_resolved, LucaError, ResolvedComponent};
+
+/// A non-fatal diagnostic emitted while interpreting the documented
+/// layout/style assumptions or while building a visual tree.
+///
+/// Diagnostics from the structural parser, state layer, and bindings remain
+/// source-located `LucaError`s. These are *warnings*: an entry the visual
+/// layer cannot interpret is reported and then ignored (unknown entries stay
+/// opaque), so a view still renders.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct RenderDiagnostic {
+    pub message: String,
+    pub line: usize,
+    pub column: usize,
+    /// Component the diagnostic belongs to, when known.
+    pub component: Option<String>,
+}
+
+impl RenderDiagnostic {
+    pub fn new(message: impl Into<String>, line: usize, column: usize) -> Self {
+        Self {
+            message: message.into(),
+            line,
+            column,
+            component: None,
+        }
+    }
+
+    pub fn on_component(mut self, component: impl Into<String>) -> Self {
+        self.component = Some(component.into());
+        self
+    }
+}
+
+impl fmt::Display for RenderDiagnostic {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "Render warning at {}:{}: {}",
+            self.line, self.column, self.message
+        )
+    }
+}
+
+/// A backend that consumes a display list (the platform-independent paint
+/// output) instead of walking the resolved tree itself.
+///
+/// `Size` is the document/surface size in the same abstract units the layout
+/// engine produced. Visual backends declare `name` like every backend and
+/// must remain deterministic.
+pub trait VisualBackend {
+    fn name(&self) -> &'static str;
+
+    fn render_display_list(
+        &mut self,
+        display_list: &DisplayList,
+        size: Size,
+    ) -> Result<(), LucaError>;
+}
 
 /// The renderer contract. Backends implement presentation only; all
 /// validation, state, and binding work happens before `render` is called.
@@ -61,8 +123,12 @@ pub fn format_value(value: &Value) -> String {
 /// name, `id`, accessible label, then resolved props and layout/style
 /// entries — and interprets no component names, so no component inventory
 /// or platform vocabulary leaks in. Its deterministic string output also
-/// serves the UI testing API foundation. Native, custom/GPU, and web
-/// backends are NOT implemented in 0.7.
+/// serves the UI testing API foundation.
+///
+/// [`crate::SvgBackend`] is the static visual backend: it consumes a
+/// [`DisplayList`] built by the layout/paint
+/// pipeline. Interactive native, custom/GPU, and web backends remain
+/// unimplemented options.
 #[derive(Debug, Default)]
 pub struct TextBackend {
     lines: Vec<String>,
@@ -115,12 +181,7 @@ impl TextBackend {
         }
     }
 
-    fn emit_entries(
-        &mut self,
-        depth: usize,
-        section: &str,
-        entries: &[crate::ResolvedProp],
-    ) {
+    fn emit_entries(&mut self, depth: usize, section: &str, entries: &[crate::ResolvedProp]) {
         if entries.is_empty() {
             return;
         }
@@ -142,6 +203,9 @@ impl Renderer for TextBackend {
     }
 
     fn render(&mut self, root: &ResolvedComponent) -> Result<(), LucaError> {
+        // Each render is one presentation: a reused backend must not append
+        // the next tree to the previous output.
+        self.lines.clear();
         self.emit(root, 0);
         Ok(())
     }

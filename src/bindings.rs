@@ -1,4 +1,4 @@
-//! Property bindings for 0.4 Alpha: UI output derived from state.
+//! Property bindings for 1.0.2 Beta: UI output derived from state.
 //!
 //! Locked design facts: UI output derives from application
 //! state and declared properties; components change through state, never
@@ -33,7 +33,7 @@ pub struct ResolvedProp {
 }
 
 /// A component with every property, layout entry, and style entry resolved
-/// against committed state. This is the 0.4 "UI output derives from state"
+/// against committed state. This is the resolved "UI output derives from state"
 /// artifact; rendering it is a later milestone.
 #[derive(Debug, Clone, PartialEq)]
 pub struct ResolvedComponent {
@@ -100,8 +100,10 @@ fn resolve_into(
             column: prop.column,
         });
     }
-    // Layout/style entries resolve the same way but carry no locked rules
-    // (consistent with parse-time validation).
+    // Layout/style entries resolve the same way but carry no locked type rules
+    // here (consistent with parse-time structural validation). The visual
+    // pipeline applies its documented ◐ expectations to recognized entries
+    // separately, reporting mismatches as non-fatal render warnings.
     let mut layout = Vec::new();
     if let Some(block) = &component.layout {
         for entry in &block.entries {
@@ -156,9 +158,10 @@ fn resolve_value(
     column: usize,
 ) -> Result<Value, LucaError> {
     match value {
-        PropValue::Ref(name) => state.get(name).cloned().ok_or_else(|| {
-            LucaError::new(format!("'{name}' is not declared"), line, column)
-        }),
+        PropValue::Ref(name) => state
+            .get(name)
+            .cloned()
+            .ok_or_else(|| LucaError::new(format!("'{name}' is not declared"), line, column)),
         literal => match literal_to_value(literal) {
             Some(v) => Ok(v),
             None => match literal {

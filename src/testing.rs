@@ -1,4 +1,4 @@
-//! Dedicated UI testing API for 0.9 Alpha (locked decision 106–115: dedicated
+//! Dedicated UI testing API for 1.0.2 Beta (locked decision 106–115: dedicated
 //! UI tests and explicit component identifiers).
 //!
 //! `TestHarness` drives a parsed tree deterministically with no I/O,
@@ -10,8 +10,9 @@
 use luca_code::types::Value;
 
 use crate::{
-    describe_resolved, dispatch, is_visible, Dispatch, LifecycleDiff, LucaError, ResolvedComponent,
-    Runtime, TextBackend,
+    build_visual, describe_resolved, dispatch, is_visible, Dispatch, LifecycleDiff, LucaError,
+    Point, Rect, ResolvedComponent, Runtime, Size, SvgBackend, TextBackend, Visual, DEFAULT_HEIGHT,
+    DEFAULT_WIDTH,
 };
 
 /// Deterministic driver for UI tests, built on [`Runtime`].
@@ -23,7 +24,9 @@ pub struct TestHarness {
 impl TestHarness {
     /// Parse, validate, declare state, and mount every id.
     pub fn new(source: &str) -> Result<Self, LucaError> {
-        Ok(Self { runtime: Runtime::new(crate::parse(source)?)? })
+        Ok(Self {
+            runtime: Runtime::new(crate::parse(source)?)?,
+        })
     }
 
     /// Route `event` on the component with `id`; returns the handler name.
@@ -31,6 +34,55 @@ impl TestHarness {
     /// `set`/`flush`), keeping dispatch declarative.
     pub fn tap(&self, id: &str, event: &str) -> Result<Dispatch, LucaError> {
         dispatch(self.runtime.tree(), id, event)
+    }
+
+    /// Alias for [`TestHarness::tap`] — a named click on an identified
+    /// component. No pointer is involved; hit testing is available
+    /// separately through [`TestHarness::hit_test`].
+    pub fn click(&self, id: &str, event: &str) -> Result<Dispatch, LucaError> {
+        self.tap(id, event)
+    }
+
+    /// Build a static visual at an explicit document size.
+    pub fn visual(&self, width: u32, height: u32) -> Result<Visual, LucaError> {
+        build_visual(&self.resolve()?, Size::new(width, height))
+    }
+
+    /// Build a static visual at the default document size.
+    pub fn visual_default(&self) -> Result<Visual, LucaError> {
+        self.visual(DEFAULT_WIDTH, DEFAULT_HEIGHT)
+    }
+
+    /// Layout rectangle of the component with `id` at the default size.
+    pub fn bounds(&self, id: &str) -> Result<Rect, LucaError> {
+        let resolved = self.resolve()?;
+        let visual = self.visual_default()?;
+        visual
+            .layout
+            .find_by_id(id)
+            .map(|node| node.rect)
+            .ok_or_else(|| {
+                LucaError::new(
+                    format!("No component with id '{id}'"),
+                    resolved.line,
+                    resolved.column,
+                )
+            })
+    }
+
+    /// The identified component a click at `point` targets in the default
+    /// visual (the nearest identified ancestor of the deepest hit node).
+    pub fn hit_test(&self, point: Point) -> Result<Option<String>, LucaError> {
+        let visual = self.visual_default()?;
+        Ok(crate::input::click_target(&visual.layout, point).map(str::to_owned))
+    }
+
+    /// Render current output as a static SVG document.
+    pub fn compose(&self, width: u32, height: u32) -> Result<String, LucaError> {
+        let visual = self.visual(width, height)?;
+        let mut backend = SvgBackend::new();
+        backend.render_visual(&visual)?;
+        Ok(backend.output().to_owned())
     }
 
     /// Stage a state update (commits on [`TestHarness::flush`]).

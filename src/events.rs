@@ -1,4 +1,4 @@
-//! Declarative events for 0.5 Alpha: the interaction boundary.
+//! Declarative events for 1.0.2 Beta: the interaction boundary.
 //!
 //! Locked design facts: events are the interaction boundary
 //! between components and Luca Code state/logic; components change through
@@ -69,7 +69,11 @@ impl EventBlock {
                 }
             }
         }
-        Ok(Self { events, line, column })
+        Ok(Self {
+            events,
+            line,
+            column,
+        })
     }
 }
 
@@ -88,11 +92,7 @@ pub struct Dispatch {
 /// Errors (all source-located Luca errors): no component carries the id;
 /// the component declares no such event. Dispatch addresses declared
 /// literal ids only; binding-resolved ids are a later milestone.
-pub fn dispatch(
-    tree: &Component,
-    component_id: &str,
-    event: &str,
-) -> Result<Dispatch, LucaError> {
+pub fn dispatch(tree: &Component, component_id: &str, event: &str) -> Result<Dispatch, LucaError> {
     let target = tree.find_by_id(component_id).ok_or_else(|| {
         LucaError::new(
             format!("No component with id '{component_id}'"),
@@ -107,13 +107,17 @@ pub fn dispatch(
             target.column,
         )
     })?;
-    let decl = block.events.iter().find(|d| d.event == event).ok_or_else(|| {
-        LucaError::new(
-            format!("Component '{component_id}' declares no event '{event}'"),
-            block.line,
-            block.column,
-        )
-    })?;
+    let decl = block
+        .events
+        .iter()
+        .find(|d| d.event == event)
+        .ok_or_else(|| {
+            LucaError::new(
+                format!("Component '{component_id}' declares no event '{event}'"),
+                block.line,
+                block.column,
+            )
+        })?;
     Ok(Dispatch {
         component_id: component_id.to_owned(),
         event: event.to_owned(),

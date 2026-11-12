@@ -1,4 +1,4 @@
-//! Localization foundations for 0.8 Alpha.
+//! Localization foundations for 1.0.2 Beta.
 //!
 //! Locked design facts: localization support is built in.
 //! Resource formats are NOT locked, so this module defines no file format
@@ -22,7 +22,10 @@ pub struct Resources {
 impl Resources {
     /// Create empty resources with an explicit default locale.
     pub fn new(default_locale: &str) -> Self {
-        Self { default_locale: default_locale.to_owned(), tables: HashMap::new() }
+        Self {
+            default_locale: default_locale.to_owned(),
+            tables: HashMap::new(),
+        }
     }
 
     /// The default locale chosen at construction.

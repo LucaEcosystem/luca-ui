@@ -1,4 +1,4 @@
-//! 0.9 Alpha: every shipped `.lucu` example parses, resolves against its
+//! 1.0.2 Beta: every shipped `.lucu` example parses, resolves against its
 //! declared state, and renders on the supported (text) target.
 
 use luca_ui::{parse, resolve_tree, State, TextBackend};
@@ -15,6 +15,7 @@ const EXAMPLES: &[&str] = &[
     "examples/navigation.lucu",
     "examples/themes.lucu",
     "examples/render.lucu",
+    "examples/visual.lucu",
 ];
 
 #[test]

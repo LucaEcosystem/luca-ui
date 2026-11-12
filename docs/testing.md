@@ -127,17 +127,40 @@ assert_eq!(
 - Committed state persists across swaps. Newly declared variables merge in; existing ones keep their values (a `visits = 0` in the new tree does *not* reset a committed `visits`).
 - Unmounted components lose their listeners and get their scoped tasks cancelled (● locked: component-scoped async work dies with the component).
 
+### 6. Visual bounds, hit testing, and SVG composition
+
+```rust
+use luca_ui::Point;
+
+let bounds = harness.bounds("visit").unwrap();
+assert_eq!(bounds.width, 50);                 // "Visit": 5 cells × 10 units
+
+let target = harness.hit_test(Point::new(bounds.x + 1, bounds.y + 1)).unwrap();
+assert_eq!(target.as_deref(), Some("visit"));
+
+let svg = harness.compose(320, 240).unwrap();
+assert!(svg.starts_with("<svg"));
+```
+
+`bounds` and `hit_test` use the same layout engine as `build_visual` (the documented ◐ subset). `hit_test` returns the nearest identified ancestor of the deepest node, so anonymous containers do not swallow a click. `compose` returns a **static** SVG snapshot — no rendering engine, fonts, or interaction claims. `click(id, event)` remains declaration-level dispatch; it is named for readability, not because a pointer was simulated.
+
 ## The complete harness surface
 
 | Method | What it does |
 |---|---|
 | `TestHarness::new(source)` | Parse, validate, declare state, mount every id |
 | `tap(id, event)` | Dispatch one event; returns the `Dispatch` (handler name) |
+| `click(id, event)` | Alias for `tap` (named click, no pointer) |
 | `set(key, value)` | Stage a typed update (type-checked immediately) |
 | `flush()` | Commit staged updates; returns the notification count |
 | `update(source)` | Swap in a replacement tree (returns `LifecycleDiff`) |
 | `resolve()` | Resolved tree from committed state |
 | `render()` | Resolve + render with the text backend |
+| `visual(width, height)` | Build a static visual at an explicit size |
+| `visual_default()` | Build a static visual at 320×240 |
+| `bounds(id)` | Layout rectangle of an identified component |
+| `hit_test(point)` | Nearest identified component at a point |
+| `compose(width, height)` | Render the current visual as a static SVG string |
 | `prop(id, key)` | Resolved value of one property (or `None`) |
 | `text(id)` | Resolved `text` as a string (any value via `display()`) |
 | `visible(id)` | Whether the component is shown (absent `visible` = shown) |

@@ -1,4 +1,4 @@
-//! 0.5 Alpha: event dispatch, state updates through events, lifecycle
+//! 1.0.2 Beta: event dispatch, state updates through events, lifecycle
 //! cleanup, and error reporting.
 //!
 //! Dispatch is routing only: it validates the target id and the declared
@@ -96,7 +96,10 @@ fn tracks_lifecycle_and_cancels_scoped_work() {
     assert!(diff.unmounted.is_empty());
     assert_eq!(runtime.state().get("extra"), Some(&Value::Int(1)));
     let err = runtime.scope_task("visit", "late").unwrap_err();
-    assert!(err.to_string().contains("unmounted component 'visit'"), "{err}");
+    assert!(
+        err.to_string().contains("unmounted component 'visit'"),
+        "{err}"
+    );
     assert!(runtime.cancel_task(visit_work));
     assert!(!runtime.cancel_task(9999));
 }
@@ -107,27 +110,48 @@ fn reports_event_errors() {
     // Unknown component id.
     let err = dispatch(&tree, "missing", "tap").unwrap_err();
     assert_eq!((err.line, err.column), (tree.line, tree.column));
-    assert!(err.to_string().contains("No component with id 'missing'"), "{err}");
+    assert!(
+        err.to_string().contains("No component with id 'missing'"),
+        "{err}"
+    );
     // Component without an events block.
     let err = dispatch(&tree, "greeting", "tap").unwrap_err();
     assert!(err.to_string().contains("declares no events"), "{err}");
     // Undeclared event on a component that has events.
     let err = dispatch(&tree, "visit", "swipe").unwrap_err();
-    assert!(err.to_string().contains("declares no event 'swipe'"), "{err}");
+    assert!(
+        err.to_string().contains("declares no event 'swipe'"),
+        "{err}"
+    );
 
     // Malformed declarations are compile-time Luca errors.
     let cases = [
         // Handler must name Luca Code logic, not a literal.
-        ("App:\n  id = \"a\"\n  events:\n    tap = \"go\"\n", "handler must be a Luca Code handler name"),
-        ("App:\n  id = \"a\"\n  events:\n    tap = 1\n", "handler must be"),
+        (
+            "App:\n  id = \"a\"\n  events:\n    tap = \"go\"\n",
+            "handler must be a Luca Code handler name",
+        ),
+        (
+            "App:\n  id = \"a\"\n  events:\n    tap = 1\n",
+            "handler must be",
+        ),
         // Entries only; at most one block; must belong to a component.
-        ("App:\n  id = \"a\"\n  events:\n    tap = go\n    tap = stop\n", "Duplicate 'tap' in `events`"),
+        (
+            "App:\n  id = \"a\"\n  events:\n    tap = go\n    tap = stop\n",
+            "Duplicate 'tap' in `events`",
+        ),
         (
             "App:\n  id = \"a\"\n  events:\n    tap = go\n  events:\n    tap = stop\n",
             "Duplicate 'events' block",
         ),
-        ("App:\n  id = \"a\"\n  events:\n    Text:\n", "Only `key = value` entries are allowed inside `events`"),
-        ("events:\n  tap = go\n", "`events` must belong to a component"),
+        (
+            "App:\n  id = \"a\"\n  events:\n    Text:\n",
+            "Only `key = value` entries are allowed inside `events`",
+        ),
+        (
+            "events:\n  tap = go\n",
+            "`events` must belong to a component",
+        ),
     ];
     for (src, fragment) in cases {
         let msg = parse(src).unwrap_err().to_string();

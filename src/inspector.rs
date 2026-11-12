@@ -1,4 +1,4 @@
-//! Development-only visual inspector for 0.9 Alpha (locked decision 106–115:
+//! Development-only visual inspector for 1.0.2 Beta (locked decision 106–115:
 //! a development inspector that may inspect the component tree, state, and
 //! layout bounds).
 //!
@@ -60,7 +60,11 @@ impl Inspector {
         let state = snapshot_state(runtime.state());
         let mut layouts = Vec::new();
         outline_layouts(runtime.tree(), &mut layouts);
-        Snapshot { outline, state, layouts }
+        Snapshot {
+            outline,
+            state,
+            layouts,
+        }
     }
 
     /// Render a snapshot as inspectable text (the terminal target's visual).
@@ -68,8 +72,16 @@ impl Inspector {
         let mut lines = vec!["tree:".to_owned()];
         for node in &snapshot.outline {
             let pad = "  ".repeat(node.depth + 1);
-            let id = node.id.as_deref().map(|id| format!(" id={id:?}")).unwrap_or_default();
-            let hidden = if node.visible_declared { "" } else { " [hidden]" };
+            let id = node
+                .id
+                .as_deref()
+                .map(|id| format!(" id={id:?}"))
+                .unwrap_or_default();
+            let hidden = if node.visible_declared {
+                ""
+            } else {
+                " [hidden]"
+            };
             lines.push(format!(
                 "{pad}{} ({}:{}){id}{hidden}",
                 node.name, node.line, node.column
@@ -80,14 +92,21 @@ impl Inspector {
             lines.push("  (none)".to_owned());
         }
         for entry in &snapshot.state {
-            lines.push(format!("  .{} ({}) = {}", entry.name, entry.declared, entry.value));
+            lines.push(format!(
+                "  .{} ({}) = {}",
+                entry.name, entry.declared, entry.value
+            ));
         }
         lines.push("layout:".to_owned());
         if snapshot.layouts.is_empty() {
             lines.push("  (none)".to_owned());
         }
         for layout in &snapshot.layouts {
-            let id = layout.id.as_deref().map(|id| format!(" id={id:?}")).unwrap_or_default();
+            let id = layout
+                .id
+                .as_deref()
+                .map(|id| format!(" id={id:?}"))
+                .unwrap_or_default();
             lines.push(format!("  {}{id}:", layout.component));
             for (key, value) in &layout.entries {
                 lines.push(format!("    .{key} = {value}"));
@@ -100,7 +119,10 @@ impl Inspector {
 fn outline_component(component: &Component, depth: usize, out: &mut Vec<OutlineNode>) {
     let visible_declared = component.props.iter().all(|p| {
         p.key != "visible"
-            || matches!(&p.value, crate::PropValue::Bool(true) | crate::PropValue::Ref(_))
+            || matches!(
+                &p.value,
+                crate::PropValue::Bool(true) | crate::PropValue::Ref(_)
+            )
     });
     out.push(OutlineNode {
         name: component.name.clone(),

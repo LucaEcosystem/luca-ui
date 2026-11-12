@@ -44,29 +44,51 @@ impl Description {
 /// string `text` is inferred, else there is no label.
 pub fn describe(component: &Component) -> Description {
     if let Some(label) = literal_str(component, "label") {
-        return Description { label: Some(label), inferred: false };
+        return Description {
+            label: Some(label),
+            inferred: false,
+        };
     }
     if let Some(text) = literal_str(component, "text") {
-        return Description { label: Some(text), inferred: true };
+        return Description {
+            label: Some(text),
+            inferred: true,
+        };
     }
-    Description { label: None, inferred: false }
+    Description {
+        label: None,
+        inferred: false,
+    }
 }
 
 /// Describe state-resolved output with the same explicit-wins rule, so
 /// bound labels and texts participate once committed state backs them.
 pub fn describe_resolved(component: &ResolvedComponent) -> Description {
     if let Some(Value::Str(label)) = component.prop("label") {
-        return Description { label: Some(label.clone()), inferred: false };
+        return Description {
+            label: Some(label.clone()),
+            inferred: false,
+        };
     }
     if let Some(Value::Str(text)) = component.prop("text") {
-        return Description { label: Some(text.clone()), inferred: true };
+        return Description {
+            label: Some(text.clone()),
+            inferred: true,
+        };
     }
-    Description { label: None, inferred: false }
+    Description {
+        label: None,
+        inferred: false,
+    }
 }
 
 fn literal_str(component: &Component, key: &str) -> Option<String> {
-    component.props.iter().find(|p| p.key == key).and_then(|p| match &p.value {
-        PropValue::Str(s) => Some(s.clone()),
-        _ => None,
-    })
+    component
+        .props
+        .iter()
+        .find(|p| p.key == key)
+        .and_then(|p| match &p.value {
+            PropValue::Str(s) => Some(s.clone()),
+            _ => None,
+        })
 }

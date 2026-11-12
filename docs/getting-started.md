@@ -14,7 +14,7 @@ By the end of this guide you will have:
 
 ## How Luca UI fits together
 
-Luca UI is **not** a general-purpose programming language. It is a thin, declarative UI layer on top of [Luca Code](https://github.com/LucaEcosystem/luca-ui), which is the general-purpose language of the Luca Ecosystem:
+Luca UI is **not** a general-purpose programming language. It is a thin, declarative UI layer on top of [Luca Code](https://github.com/LucaEcosystem/luca-code), which is the general-purpose language of the Luca Ecosystem:
 
 | File | Role | Owner |
 |---|---|---|
@@ -96,7 +96,7 @@ Reading the output:
 - The `(line:column)` after each component is where that component was declared — that is where diagnostics will point.
 - There is no `visible` in the output because we did not declare it. Absent `visible` means the component is shown; nothing here hides anything unless you say `visible = false`.
 
-This prints the **declarative tree** — validation plus structure, not pixels. Rendering to actual screens is the job of backends (see [Rendering](rendering.md)). This release ships a **text backend** that renders the resolved tree as structural lines (see step 4).
+This prints the **declarative tree** — validation plus structure, not pixels. Rendering is the job of backends (see [Rendering](rendering.md)). This release ships a **text backend** that renders the resolved tree as structural lines and a **static SVG backend** that renders layout, paint, and text as vector primitives.
 
 ## 4. Make the UI derive from state
 
@@ -158,6 +158,22 @@ App id="app"
 - `.text = title` became `.text = "Luca UI"`, and `.text = visits` became `.text = 2`.
 - The state block is not part of rendered output — rendered output is the component tree after state substitution.
 - `label="Luca UI"` appears automatically: when a component has no explicit `label`, its string `text` is offered as the accessible label (● locked accessibility inference — see [Components](components.md)).
+
+### See a static visual
+
+The same resolved output can become an SVG snapshot. Add a `layout:`/`style:` block to the example above (or run the shipped one):
+
+```sh
+luca-ui render examples/visual.lucu --out visual.svg --width 320 --height 200
+```
+
+`visual.svg` contains `<rect>`/`<text>` primitives built from the documented ◐ layout/style subset. It is deliberately **static**: no interaction, platform fonts, or accessibility tree. To validate the view *and* see warnings about unrecognized visual values, use:
+
+```sh
+luca-ui check examples/visual.lucu
+```
+
+Details and the exact subset: [Rendering](rendering.md) and [Styling and theming](styling-theming.md).
 
 ## 5. Connect an event to logic
 
@@ -232,6 +248,8 @@ How the two connect (● locked):
 - Dispatch verifies the component id and the declared event and returns the handler name (see [`dispatch`](state-and-events.md#dispatch-returns-a-name-not-a-call)). Your application code decides when the handler runs.
 
 There is **no automatic `.lucu`→`.lucc` event hookup** in this release (○ not implemented): the host application performs dispatch → run logic → state update → re-render. The [render example in `examples/`](examples.md) and [`tests/events.rs`](../tests/events.rs) in the repository show the full wiring.
+
+When a sibling `.lucc` file exists, `luca-ui check events-demo.lucu` verifies that every declared handler has a top-level `def func`. Imports make that check unverified rather than failing (see [CLI reference](cli.md#luca-ui-check-viewlucu--validate-the-whole-static-picture)).
 
 ## 6. Set up the VS Code extension
 

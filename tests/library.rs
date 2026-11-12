@@ -1,4 +1,4 @@
-//! 0.9 Alpha: core component library — registered App/Text/Button with
+//! 1.0.2 Beta: core component library — registered App/Text/Button with
 //! the shared locked API, strict unknown-prop rejection on registered
 //! names, open vocabulary elsewhere, zero platform concepts.
 
@@ -17,7 +17,9 @@ fn registry_holds_the_minimal_cross_platform_core() {
         assert!(!core.description.is_empty(), "{}", core.name);
         // Cross-platform purity: no platform, renderer, or toolkit names.
         let haystack = format!("{} {}", core.name, core.description).to_lowercase();
-        for token in ["ios", "android", "macos", "windows", "web", "native", "gpu", "cocoa", "uikit", "dom"] {
+        for token in [
+            "ios", "android", "macos", "windows", "web", "native", "gpu", "cocoa", "uikit", "dom",
+        ] {
             assert!(!haystack.contains(token), "{} mentions {token}", core.name);
         }
     }
@@ -36,7 +38,9 @@ fn registry_holds_the_minimal_cross_platform_core() {
 #[test]
 fn enforces_registered_props_and_keeps_open_vocabulary() {
     // Registered: unknown props rejected with the supported list.
-    let err = parse("Button:\n  id = \"b\"\n  tap = 1\n").unwrap_err().to_string();
+    let err = parse("Button:\n  id = \"b\"\n  tap = 1\n")
+        .unwrap_err()
+        .to_string();
     assert_eq!(
         err,
         "Error at 3:3: Unknown property 'tap' on component 'Button' (supports: disabled, id, label, text, visible)"
@@ -61,8 +65,9 @@ fn every_core_component_renders_cross_platform() {
     )
     .unwrap();
     let state = luca_ui::State::from_tree(&tree).unwrap();
-    let output = luca_ui::TextBackend::render_to_string(&luca_ui::resolve_tree(&tree, &state).unwrap())
-        .unwrap();
+    let output =
+        luca_ui::TextBackend::render_to_string(&luca_ui::resolve_tree(&tree, &state).unwrap())
+            .unwrap();
     for id in ["app", "t", "b"] {
         assert!(output.contains(&format!("id=\"{id}\"")), "{output}");
     }

@@ -1,0 +1,17 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Ask a question / discuss
+    url: https://github.com/LucaEcosystem/luca-ui/discussions
+    about: Usage help, design conversation, and anything that is not a bug or a feature request.
+  - name: Luca Code issues
+    url: https://github.com/LucaEcosystem/luca-code/issues
+    about: Language, interpreter, type system, and `.lucc` problems belong to Luca Code, not Luca UI.
+  - name: Read the documentation
+    url: https://github.com/LucaEcosystem/luca-ui/blob/main/docs/README.md
+    about: Guides, CLI reference, diagnostics catalog, and compatibility notes.
+  - name: Security report
+    url: https://github.com/LucaEcosystem/luca-ui/security/advisories/new
+    about: Report a vulnerability privately. Never open a public issue for security problems.
+  - name: License
+    url: https://github.com/LucaEcosystem/luca-ui/blob/main/LICENSE
+    about: Luca UI is proprietary; read the license before redistributing or modifying it.

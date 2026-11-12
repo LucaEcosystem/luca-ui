@@ -41,8 +41,8 @@ jobs:
           repository: LucaEcosystem/luca-code
           path: Packages/Luca Code
       - uses: dtolnay/rust-toolchain@stable
-      - name: Tests
-        run: cargo test
+      - name: Tests (all targets)
+        run: cargo test --all-targets --all-features
       - name: Release binary
         run: cargo build --release
       - name: Bundle binary tarball
@@ -51,10 +51,13 @@ jobs:
           tag="${GITHUB_REF_NAME}"
           target="$(rustc -vV | sed -n 's/^host: //p')"
           stage="luca-ui-${tag}-${target}"
-          mkdir -p "release/${stage}/examples"
+          mkdir -p "release/${stage}/examples" "release/${stage}/docs"
           cp "target/release/luca-ui${{ runner.os == 'Windows' && '.exe' || '' }}" "release/${stage}/"
-          cp README.md "docs/RELEASE-NOTES.md" "release/${stage}/"
+          cp README.md LICENSE CHANGELOG.md "release/${stage}/"
+          cp docs/*.md "release/${stage}/docs/"
           cp examples/*.lucu "release/${stage}/examples/"
+          # Paired Luca Code logic belongs with the examples that use it.
+          cp examples/*.lucc "release/${stage}/examples/" 2>/dev/null || true
           tar -czf "release/${stage}.tar.gz" -C release "${stage}"
       - name: Upload binary tarball
         uses: actions/upload-artifact@v4

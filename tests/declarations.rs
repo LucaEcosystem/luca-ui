@@ -1,4 +1,4 @@
-//! 0.2 Alpha: component declarations, identity, property validation, tree.
+//! 1.0.2 Beta: component declarations, identity, property validation, tree.
 //!
 //! Uses only design-locked rules: `id` on every component (unique, non-empty
 //! string, suitable for tests), `visible`/`disabled` as ordinary bool props,
@@ -15,13 +15,16 @@ fn err_msg(src: &str) -> String {
 
 #[test]
 fn accepts_valid_trees() {
-    // Documented 0.2 example: root, siblings, depth 3, ids everywhere.
+    // Documented declarations example: root, siblings, depth 3, ids everywhere.
     let src = std::fs::read_to_string("examples/declarations.lucu").unwrap();
     let tree = parse(&src).unwrap();
     assert_eq!(tree.name, "App");
     assert_eq!(tree.count(), 5);
     assert_eq!(tree.depth(), 3);
-    assert_eq!(tree.ids(), vec!["app", "header", "title", "body", "greeting"]);
+    assert_eq!(
+        tree.ids(),
+        vec!["app", "header", "title", "body", "greeting"]
+    );
     assert_eq!(tree.children.len(), 2);
     assert_eq!(tree.children[0].name, "Header");
     assert_eq!(tree.children[1].name, "Body");
@@ -79,7 +82,10 @@ fn rejects_invalid_declarations() {
         ("id = \"x\"\n", "Property outside a component"),
         ("App:\nApp:\n", "single root"),
         ("App:\n\tvisible = true\n", "Tabs"),
-        ("App:\n  A:\nvisible = true\n", "Property outside a component"),
+        (
+            "App:\n  A:\nvisible = true\n",
+            "Property outside a component",
+        ),
     ];
     for (src, fragment) in cases {
         let msg = err_msg(src);
@@ -158,7 +164,10 @@ fn validates_identifiers_as_specified() {
         ("disabled", "none"),
     ] {
         let msg = err_msg(&format!("App:\n  {key} = {value}\n"));
-        assert!(msg.contains(&format!("Property '{key}' must be bool")), "got {msg}");
+        assert!(
+            msg.contains(&format!("Property '{key}' must be bool")),
+            "got {msg}"
+        );
     }
     // Accessibility labels stay strings when present.
     let msg = err_msg("App:\n  label = 7\n");
@@ -169,7 +178,10 @@ fn validates_identifiers_as_specified() {
 fn reports_precise_source_locations() {
     let err = parse("App:\n  visible = \"yes\"\n").unwrap_err();
     assert_eq!((err.line, err.column), (2, 3));
-    assert_eq!(err.to_string(), "Error at 2:3: Property 'visible' must be bool, found str");
+    assert_eq!(
+        err.to_string(),
+        "Error at 2:3: Property 'visible' must be bool, found str"
+    );
 
     let err = parse("App:\n  id = \"a\"\n  Text:\n    id = \"a\"\n").unwrap_err();
     assert_eq!((err.line, err.column), (4, 5));

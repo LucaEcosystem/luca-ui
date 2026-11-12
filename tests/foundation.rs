@@ -1,4 +1,4 @@
-//! 0.1 Alpha foundation tests: parsing, validation, errors, seam boundary.
+//! Foundation tests: parsing, validation, errors, seam boundary.
 
 use luca_ui::{parse, run_paired, seam};
 

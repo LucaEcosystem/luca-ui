@@ -1,0 +1,45 @@
+-- Luca UI 1.0.2 Beta example: static visual snapshot.
+-- The `layout:` and `style:` entries below use the documented ◐ assumption
+-- subset (direction/gap/padding/width/height/align and
+-- background/color/border/radius/font_size). Unknown entries stay opaque.
+App:
+  id = "app"
+  layout:
+    direction = "column"
+    gap = 8
+    padding = 12
+    width = 320
+    height = 200
+    align = "stretch"
+  style:
+    background = "#101418"
+    color = "#e6edf3"
+    border = "#30363d"
+    radius = 8
+    font_size = 16
+  Header:
+    id = "header"
+    layout:
+      padding = 6
+    style:
+      background = "#1f6feb"
+      color = "#ffffff"
+      radius = 4
+    Text:
+      id = "title"
+      text = "Luca UI visual snapshot"
+  Body:
+    id = "body"
+    layout:
+      direction = "row"
+      gap = 8
+      align = "center"
+    Text:
+      id = "greeting"
+      text = "Hello, Luca!"
+    Text:
+      id = "note"
+      text = "Static SVG"
+      style:
+        color = "#8b949e"
+        font_size = 12

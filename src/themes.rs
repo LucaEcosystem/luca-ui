@@ -1,4 +1,4 @@
-//! First-class themes and system appearance for 0.8 Alpha.
+//! First-class themes and system appearance for 1.0.2 Beta.
 //!
 //! Locked design facts: themes are first-class and system
 //! appearance is followed automatically by default. Theme token names are
@@ -66,7 +66,10 @@ pub struct Environment {
 impl Environment {
     /// Declare the platform context explicitly (no invented defaults).
     pub fn new(system: SystemAppearance, reduced_motion: bool) -> Self {
-        Self { system, reduced_motion }
+        Self {
+            system,
+            reduced_motion,
+        }
     }
 }
 
@@ -136,7 +139,13 @@ impl Theme {
                 _ => tokens.push(entry),
             }
         }
-        Ok(Self { name, mode, tokens, line, column })
+        Ok(Self {
+            name,
+            mode,
+            tokens,
+            line,
+            column,
+        })
     }
 
     /// Resolve this theme's selection against the platform appearance.

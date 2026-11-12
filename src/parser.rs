@@ -1,4 +1,4 @@
-//! `.lucu` declaration parser for 0.5 Alpha.
+//! `.lucu` declaration parser for 1.0.2 Beta.
 //!
 //! Assumption syntax (NOT locked design):
 //! ```text
@@ -18,11 +18,12 @@
 //! - Component lines are `Name:`; property lines are `key = value`.
 //! - `layout:`/`style:`/`state:`/`events:` are reserved child blocks holding
 //!   only `key = value` entries (at most one of each per component);
-//!   layout/style entry names carry no locked meaning — see `crate::layout` /
-//!   `crate::style`; `state:` entries must be literals — see `crate::state`;
-//!   `events:` entries must be `event = handler` names — see `crate::events`.
-//!   A bare-identifier value is a binding resolved against state at
-//!   `crate::bindings::resolve_tree`.
+//!   layout/style entry names are structurally validated, and the visual
+//!   pipeline interprets a documented ◐ subset — see `crate::layout` /
+//!   `crate::style`; unknown entries stay opaque. `state:` entries must be
+//!   literals — see `crate::state`; `events:` entries must be `event = handler`
+//!   names — see `crate::events`. A bare-identifier value is a binding
+//!   resolved against state at `crate::bindings::resolve_tree`.
 //! - Indentation is spaces; tabs are rejected. Children/props must be
 //!   indented relative to their parent; dedents must return to a known level.
 //! - Values: `"string"`, `true`/`false`, `none`, numbers (`12`, `-3.50`),
@@ -61,20 +62,31 @@ fn strip_multiline(source: &str) -> Result<String, LucaError> {
     let mut line = 1usize;
     let mut col = 1usize;
     let mut in_string = false;
-    let mut prev = '\0';
+    // Consecutive backslashes immediately before the current character. A
+    // quote closes a string only when this count is even, so `\\"` closes
+    // while `\"` does not.
+    let mut backslashes = 0usize;
     while let Some(c) = chars.next() {
         if c == '\n' {
             out.push(c);
             line += 1;
             col = 1;
-            prev = c;
+            backslashes = 0;
             continue;
         }
-        if c == '"' && prev != '\\' {
-            in_string = !in_string;
+        if c == '"' {
+            if backslashes.is_multiple_of(2) {
+                in_string = !in_string;
+            }
             out.push(c);
             col += 1;
-            prev = c;
+            backslashes = 0;
+            continue;
+        }
+        if c == '\\' {
+            backslashes += 1;
+            out.push(c);
+            col += 1;
             continue;
         }
         if !in_string && c == '[' && chars.peek() == Some(&'[') {
@@ -82,35 +94,36 @@ fn strip_multiline(source: &str) -> Result<String, LucaError> {
             let start_col = col;
             chars.next();
             col += 2;
-            prev = '[';
+            backslashes = 0;
             let mut closed = false;
             while let Some(d) = chars.next() {
                 if d == '\n' {
                     out.push(d);
                     line += 1;
                     col = 1;
-                    prev = d;
                     continue;
                 }
                 if d == ']' && chars.peek() == Some(&']') {
                     chars.next();
                     closed = true;
                     col += 2;
-                    prev = ']';
                     break;
                 }
                 // Swallow comment content; keep columns roughly aligned.
                 col += 1;
-                prev = d;
             }
             if !closed {
-                return Err(LucaError::new("Unterminated multiline comment", start_line, start_col));
+                return Err(LucaError::new(
+                    "Unterminated multiline comment",
+                    start_line,
+                    start_col,
+                ));
             }
             continue;
         }
+        backslashes = 0;
         out.push(c);
         col += 1;
-        prev = c;
     }
     Ok(out)
 }
@@ -118,15 +131,29 @@ fn strip_multiline(source: &str) -> Result<String, LucaError> {
 /// Strip a `--` comment starting outside a double-quoted string.
 fn strip_line_comment(line: &str) -> &str {
     let mut in_string = false;
-    let mut prev: Option<char> = None;
+    let mut backslashes = 0usize;
     for (idx, c) in line.char_indices() {
-        if c == '"' && prev != Some('\\') {
-            in_string = !in_string;
+        if in_string {
+            match c {
+                '\\' => backslashes += 1,
+                '"' => {
+                    if backslashes.is_multiple_of(2) {
+                        in_string = false;
+                    }
+                    backslashes = 0;
+                }
+                _ => backslashes = 0,
+            }
+            continue;
         }
-        if !in_string && c == '-' && line[idx..].starts_with("--") {
-            return &line[..idx];
+        match c {
+            '"' => {
+                in_string = true;
+                backslashes = 0;
+            }
+            '-' if line[idx..].starts_with("--") => return &line[..idx],
+            _ => backslashes = 0,
         }
-        prev = Some(c);
     }
     line
 }
@@ -154,19 +181,17 @@ fn parse_value(text: &str, line: usize, column: usize) -> Result<PropValue, Luca
     if t.is_empty() {
         return Err(LucaError::new("Expected a value after '='", line, column));
     }
-    if t.starts_with('"') {
-        if t.len() < 2 || !t.ends_with('"') {
-            return Err(LucaError::new("Unterminated string literal", line, column));
-        }
-        let inner = &t[1..t.len() - 1];
-        if inner.contains('\n') {
-            return Err(LucaError::new("Unterminated string literal", line, column));
-        }
-        let mut value = String::with_capacity(inner.len());
-        let mut chars = inner.chars();
+    if let Some(stripped) = t.strip_prefix('"') {
+        let mut value = String::with_capacity(t.len());
+        let mut chars = stripped.chars();
+        let mut closed = false;
         while let Some(c) = chars.next() {
-            if c == '\\' {
-                match chars.next() {
+            match c {
+                '"' => {
+                    closed = true;
+                    break;
+                }
+                '\\' => match chars.next() {
                     Some('"') => value.push('"'),
                     Some('\\') => value.push('\\'),
                     Some('n') => value.push('\n'),
@@ -180,10 +205,23 @@ fn parse_value(text: &str, line: usize, column: usize) -> Result<PropValue, Luca
                     None => {
                         return Err(LucaError::new("Unterminated string literal", line, column));
                     }
+                },
+                '\n' => {
+                    return Err(LucaError::new("Unterminated string literal", line, column));
                 }
-            } else {
-                value.push(c);
+                _ => value.push(c),
             }
+        }
+        if !closed {
+            return Err(LucaError::new("Unterminated string literal", line, column));
+        }
+        let rest = chars.as_str().trim();
+        if !rest.is_empty() {
+            return Err(LucaError::new(
+                format!("Unexpected text after string literal: '{rest}'"),
+                line,
+                column,
+            ));
         }
         return Ok(PropValue::Str(value));
     }
@@ -236,8 +274,17 @@ pub fn parse(source: &str) -> Result<Component, LucaError> {
     let cleaned = strip_multiline(source)?;
     // Raw nodes: (indent, kind) in source order.
     enum Node {
-        Comp { name: String, line: usize, column: usize },
-        PropNode { key: String, value: PropValue, line: usize, column: usize },
+        Comp {
+            name: String,
+            line: usize,
+            column: usize,
+        },
+        PropNode {
+            key: String,
+            value: PropValue,
+            line: usize,
+            column: usize,
+        },
     }
     struct Item {
         indent: usize,
@@ -260,9 +307,14 @@ pub fn parse(source: &str) -> Result<Component, LucaError> {
         if let Some(stripped) = trimmed.strip_suffix(':') {
             let name = stripped.trim();
             if name.is_empty() {
-                return Err(LucaError::new("Expected a component name before ':'", line_no, column));
+                return Err(LucaError::new(
+                    "Expected a component name before ':'",
+                    line_no,
+                    column,
+                ));
             }
-            if name.contains('=') || name.contains(' ') || name.contains('(') || name.contains(')') {
+            if name.contains('=') || name.contains(' ') || name.contains('(') || name.contains(')')
+            {
                 if name.contains('(') || name.contains(')') {
                     return Err(LucaError::new(
                         "Imperative component operations are not supported; update state and allow the UI to react",
@@ -291,7 +343,14 @@ pub fn parse(source: &str) -> Result<Component, LucaError> {
                     column,
                 ));
             }
-            items.push(Item { indent, node: Node::Comp { name: name.to_owned(), line: line_no, column } });
+            items.push(Item {
+                indent,
+                node: Node::Comp {
+                    name: name.to_owned(),
+                    line: line_no,
+                    column,
+                },
+            });
         } else if trimmed.contains('=') {
             let eq = trimmed.find('=').expect("contains =");
             let key = trimmed[..eq].trim();
@@ -316,7 +375,12 @@ pub fn parse(source: &str) -> Result<Component, LucaError> {
             let value = parse_value(value_text, line_no, value_column)?;
             items.push(Item {
                 indent,
-                node: Node::PropNode { key: key.to_owned(), value, line: line_no, column },
+                node: Node::PropNode {
+                    key: key.to_owned(),
+                    value,
+                    line: line_no,
+                    column,
+                },
             });
         } else {
             // Bare call-shaped lines are imperative operations.
@@ -336,20 +400,32 @@ pub fn parse(source: &str) -> Result<Component, LucaError> {
     }
 
     if items.is_empty() {
-        return Err(LucaError::new("Expected a component, found empty file", 1, 1));
+        return Err(LucaError::new(
+            "Expected a component, found empty file",
+            1,
+            1,
+        ));
     }
     if items[0].indent != 0 {
         let line = match &items[0].node {
             Node::Comp { line, .. } => *line,
             Node::PropNode { line, .. } => *line,
         };
-        return Err(LucaError::new("Root component must start at column 1", line, items[0].indent + 1));
+        return Err(LucaError::new(
+            "Root component must start at column 1",
+            line,
+            items[0].indent + 1,
+        ));
     }
     // First item must be a component.
     match &items[0].node {
         Node::Comp { .. } => {}
         Node::PropNode { line, column, .. } => {
-            return Err(LucaError::new("Property outside a component", *line, *column));
+            return Err(LucaError::new(
+                "Property outside a component",
+                *line,
+                *column,
+            ));
         }
     }
 
@@ -388,7 +464,10 @@ pub fn parse(source: &str) -> Result<Component, LucaError> {
                     }
                     roots.push(Component::new(name, line, column));
                     stack.clear();
-                    stack.push(Frame { indent: 0, path: vec![roots.len() - 1] });
+                    stack.push(Frame {
+                        indent: 0,
+                        path: vec![roots.len() - 1],
+                    });
                     levels = vec![0];
                 } else {
                     // Pop until a parent with smaller indent is found.
@@ -411,20 +490,30 @@ pub fn parse(source: &str) -> Result<Component, LucaError> {
                     }
                     let parent_path = parent.path.clone();
                     let parent_node = at_path(&mut roots, &parent_path);
-                    parent_node.children.push(Component::new(name, line, column));
+                    parent_node
+                        .children
+                        .push(Component::new(name, line, column));
                     let child_idx = parent_node.children.len() - 1;
                     let mut path = parent_path;
                     path.push(child_idx);
-                    stack.push(Frame { indent: item.indent, path });
+                    stack.push(Frame {
+                        indent: item.indent,
+                        path,
+                    });
                 }
             }
-            Node::PropNode { key, value, line, column } => {
+            Node::PropNode {
+                key,
+                value,
+                line,
+                column,
+            } => {
                 while stack.last().is_some_and(|f| f.indent >= item.indent) {
                     stack.pop();
                 }
-                let owner = stack.last().ok_or_else(|| {
-                    LucaError::new("Property outside a component", line, column)
-                })?;
+                let owner = stack
+                    .last()
+                    .ok_or_else(|| LucaError::new("Property outside a component", line, column))?;
                 if item.indent <= owner.indent {
                     return Err(LucaError::new(
                         "Inconsistent indentation; dedent must return to a known level",
@@ -436,7 +525,12 @@ pub fn parse(source: &str) -> Result<Component, LucaError> {
                     levels.push(item.indent);
                 }
                 let path = owner.path.clone();
-                at_path(&mut roots, &path).props.push(Prop { key, value, line, column });
+                at_path(&mut roots, &path).props.push(Prop {
+                    key,
+                    value,
+                    line,
+                    column,
+                });
             }
         }
     }

@@ -47,7 +47,7 @@ pub struct ScopedTask {
     pub cancelled: bool,
 }
 
-/// The 0.5 runtime: current tree, application state, mounted ids, and
+/// The runtime: current tree, application state, mounted ids, and
 /// component-scoped tasks.
 #[derive(Debug)]
 pub struct Runtime {
@@ -63,7 +63,13 @@ impl Runtime {
     pub fn new(tree: Component) -> Result<Self, LucaError> {
         let state = State::from_tree(&tree)?;
         let mounted = tree.ids().into_iter().map(str::to_owned).collect();
-        Ok(Self { tree, state, mounted, tasks: HashMap::new(), next_task: 1 })
+        Ok(Self {
+            tree,
+            state,
+            mounted,
+            tasks: HashMap::new(),
+            next_task: 1,
+        })
     }
 
     /// The current tree.
@@ -126,7 +132,12 @@ impl Runtime {
         self.next_task += 1;
         self.tasks.insert(
             id,
-            ScopedTask { id, scope: component_id.to_owned(), label: label.to_owned(), cancelled: false },
+            ScopedTask {
+                id,
+                scope: component_id.to_owned(),
+                label: label.to_owned(),
+                cancelled: false,
+            },
         );
         Ok(id)
     }

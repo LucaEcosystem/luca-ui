@@ -1,4 +1,4 @@
-//! 0.4 Alpha: state and property bindings.
+//! 1.0.2 Beta: state and property bindings.
 //!
 //! Covers initial values (with Luca Code value semantics), updates,
 //! binding propagation (UI output derives from state), batching, type
@@ -69,7 +69,11 @@ fn batches_updates_into_one_round() {
     state.set("visits", Value::Int(4)).unwrap();
     assert_eq!(state.pending_count(), 2);
     assert_eq!(
-        resolve_tree(&tree, &state).unwrap().find_by_id("title").unwrap().prop("text"),
+        resolve_tree(&tree, &state)
+            .unwrap()
+            .find_by_id("title")
+            .unwrap()
+            .prop("text"),
         Some(&Value::Str("Luca UI".to_owned()))
     );
     // One flush commits everything; repeated sets coalesce to the final value.
@@ -92,7 +96,11 @@ fn reports_state_type_errors() {
     // int slot rejects str, at the declaration site.
     let err = state.set("visits", Value::Str("x".to_owned())).unwrap_err();
     assert_eq!((err.line, err.column), (3, 5));
-    assert!(err.to_string().contains("Expected int, found str for state 'visits'"), "{err}");
+    assert!(
+        err.to_string()
+            .contains("Expected int, found str for state 'visits'"),
+        "{err}"
+    );
     // bool slot rejects int; int and dec do not mix implicitly.
     assert!(state.set("flag", Value::Int(1)).is_err());
     let (_, mut state) = state_of("App:\n  state:\n    ratio = 2.50\n");
@@ -103,21 +111,35 @@ fn reports_state_type_errors() {
     assert_eq!(state.get("ratio"), Some(&Value::None));
     // Unknown names are Luca errors.
     let err = state.set("missing", Value::Int(1)).unwrap_err();
-    assert!(err.to_string().contains("'missing' is not declared"), "{err}");
+    assert!(
+        err.to_string().contains("'missing' is not declared"),
+        "{err}"
+    );
     // Failed sets stage nothing.
     assert_eq!(state.pending_count(), 0);
 
     // Bindings resolving to the wrong locked type fail at the binding site.
-    let (tree, state) = state_of("App:\n  state:\n    name = \"Luca\"\n  Text:\n    visible = name\n");
+    let (tree, state) =
+        state_of("App:\n  state:\n    name = \"Luca\"\n  Text:\n    visible = name\n");
     let err = resolve_tree(&tree, &state).unwrap_err();
     assert_eq!((err.line, err.column), (5, 5));
-    assert!(err.to_string().contains("Property 'visible' must be bool, found str"), "{err}");
+    assert!(
+        err.to_string()
+            .contains("Property 'visible' must be bool, found str"),
+        "{err}"
+    );
     // Unbound references fail at the binding site.
     let (tree, state) = state_of("App:\n  Text:\n    text = nowhere\n");
     let err = resolve_tree(&tree, &state).unwrap_err();
-    assert!(err.to_string().contains("'nowhere' is not declared"), "{err}");
+    assert!(
+        err.to_string().contains("'nowhere' is not declared"),
+        "{err}"
+    );
     // State initials must be literals, never references.
-    let err = parse("App:\n  state:\n    a = b\n").map(|t| State::from_tree(&t)).unwrap().unwrap_err();
+    let err = parse("App:\n  state:\n    a = b\n")
+        .map(|t| State::from_tree(&t))
+        .unwrap()
+        .unwrap_err();
     assert!(err.to_string().contains("must be literals"), "{err}");
 }
 
@@ -140,4 +162,43 @@ fn drops_listeners_when_components_disappear() {
     assert_eq!(notes[0].target, "title");
     assert!(state.unsubscribe("title"));
     assert!(!state.unsubscribe("title"));
+}
+
+#[test]
+fn key_subscriptions_receive_only_their_key_and_never_duplicate() {
+    let (_, mut state) = state_of("App:\n  state:\n    a = 0\n    b = 0\n");
+    state.subscribe_key("first", "a");
+    state.subscribe_key("second", "a");
+    state.subscribe_key("third", "b");
+    // One component may subscribe both globally and per key.
+    state.subscribe("first");
+    assert!(state.is_subscribed_to("first", "a"));
+    assert!(!state.is_subscribed_to("first", "b"));
+
+    state.set("a", Value::Int(1)).unwrap();
+    let mut notes = state.flush();
+    notes.sort_by(|left, right| left.target.cmp(&right.target));
+    assert_eq!(notes.len(), 2);
+    assert_eq!(notes[0].target, "first");
+    assert_eq!(notes[1].target, "second");
+    assert!(notes.iter().all(|note| note.key == "a"));
+
+    state.set("b", Value::Int(2)).unwrap();
+    let mut notes = state.flush();
+    notes.sort_by(|left, right| left.target.cmp(&right.target));
+    // `first` subscribed globally, so it also receives `b`; `third` only
+    // receives its key.
+    assert_eq!(notes.len(), 2);
+    assert_eq!(notes[0].target, "first");
+    assert_eq!(notes[1].target, "third");
+    assert!(notes.iter().all(|note| note.key == "b"));
+
+    assert!(state.unsubscribe_key("third", "b"));
+    assert!(!state.unsubscribe_key("third", "b"));
+    assert!(!state.is_subscribed_to("third", "b"));
+
+    // Pruning drops vanished components from key subscriptions too.
+    state.subscribe_key("gone", "a");
+    state.prune(&parse("App:\n  id = \"app\"\n").unwrap());
+    assert!(!state.is_subscribed_to("gone", "a"));
 }

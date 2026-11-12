@@ -1,4 +1,4 @@
-//! Declarative animation foundations for 0.8 Alpha.
+//! Declarative animation foundations for 1.0.2 Beta.
 //!
 //! Locked design facts: animation is part of the core API and
 //! transitions are declarative. Transition syntax and timing defaults are
@@ -33,7 +33,11 @@ impl TransitionSet {
         column: usize,
     ) -> Result<Self, LucaError> {
         check_block_entries("transitions", component, &entries)?;
-        Ok(Self { entries, line, column })
+        Ok(Self {
+            entries,
+            line,
+            column,
+        })
     }
 
     /// True when the block declares no transitions.

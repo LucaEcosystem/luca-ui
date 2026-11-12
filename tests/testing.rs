@@ -1,8 +1,8 @@
-//! 0.9 Alpha: dedicated UI testing API — deterministic, id-addressed,
+//! 1.0.2 Beta: dedicated UI testing API — deterministic, id-addressed,
 //! no component references.
 
 use luca_code::types::Value;
-use luca_ui::TestHarness;
+use luca_ui::{Point, TestHarness};
 
 const COUNTER: &str = "App:\n  id = \"app\"\n  state:\n    n = 0\n    shown = true\n  Text:\n    id = \"count\"\n    text = n\n    visible = shown\n  Button:\n    id = \"more\"\n    text = \"More\"\n    events:\n      tap = bump\n";
 
@@ -20,7 +20,10 @@ fn drives_dispatch_state_and_readback() {
     harness.set("n", Value::Int(2)).unwrap();
     harness.flush();
     assert_eq!(harness.text("count").unwrap(), Some("2".to_owned()));
-    assert_eq!(harness.prop("count", "visible").unwrap(), Some(Value::Bool(true)));
+    assert_eq!(
+        harness.prop("count", "visible").unwrap(),
+        Some(Value::Bool(true))
+    );
     assert!(harness.visible("count").unwrap());
     // Non-string text infers no accessible label (inference only where
     // the model defines it).
@@ -54,6 +57,38 @@ fn reports_harness_lookup_errors() {
     assert!(err.starts_with("Error at 1:1"), "{err}");
     let err = harness.tap("count", "tap").unwrap_err().to_string();
     assert!(err.contains("declares no events"), "{err}");
-    let err = TestHarness::new("App:\n  count = 1\n").unwrap_err().to_string();
+    let err = TestHarness::new("App:\n  count = 1\n")
+        .unwrap_err()
+        .to_string();
     assert!(err.contains("Unknown property 'count'"), "{err}");
+}
+
+#[test]
+fn exposes_bounds_hit_testing_clicks_and_svg_composition() {
+    let harness = TestHarness::new(COUNTER).unwrap();
+    assert_eq!(
+        harness.bounds("count").unwrap(),
+        luca_ui::Rect::new(0, 0, 10, 20)
+    );
+    assert_eq!(
+        harness.bounds("more").unwrap(),
+        luca_ui::Rect::new(0, 20, 40, 20)
+    );
+    assert_eq!(
+        harness.hit_test(Point::new(1, 1)).unwrap(),
+        Some("count".to_owned())
+    );
+    assert_eq!(
+        harness.hit_test(Point::new(1, 25)).unwrap(),
+        Some("more".to_owned())
+    );
+    assert_eq!(harness.click("more", "tap").unwrap().handler, "bump");
+
+    let svg = harness.compose(120, 80).unwrap();
+    assert!(svg.starts_with("<svg"), "{svg}");
+    assert!(svg.contains("width=\"120\""), "{svg}");
+    assert!(svg.contains("More"), "{svg}");
+
+    let err = harness.bounds("missing").unwrap_err().to_string();
+    assert!(err.contains("No component with id 'missing'"), "{err}");
 }

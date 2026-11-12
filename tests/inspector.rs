@@ -1,4 +1,4 @@
-//! 0.9 Alpha: development-only visual inspector — read-only snapshots of
+//! 1.0.2 Beta: development-only visual inspector — read-only snapshots of
 //! tree, state, and layout declarations (bounds deferred: no dimension
 //! semantics are locked).
 
@@ -14,7 +14,10 @@ fn snapshots_tree_state_and_layout() {
     assert_eq!(snapshot.outline.len(), 2);
     assert_eq!(snapshot.outline[0].name, "App");
     assert_eq!(snapshot.outline[0].id.as_deref(), Some("app"));
-    assert_eq!((snapshot.outline[0].line, snapshot.outline[0].column), (1, 1));
+    assert_eq!(
+        (snapshot.outline[0].line, snapshot.outline[0].column),
+        (1, 1)
+    );
     assert_eq!(snapshot.outline[1].depth, 1);
     assert!(!snapshot.outline[1].visible_declared);
     // Committed state with declared types and Luca Code display values.
@@ -40,7 +43,9 @@ fn formats_and_inspects_sources() {
         "tree:\n  App (1:1) id=\"app\"\n    Text (7:3) id=\"t\" [hidden]\nstate:\n  .n (int) = 2\nlayout:\n  App id=\"app\":\n    .gap = 2"
     );
     // Source inspection reports parse failures uniformly.
-    let err = luca_ui::inspector::inspect_source("App:\n  count = 1\n").unwrap_err().to_string();
+    let err = luca_ui::inspector::inspect_source("App:\n  count = 1\n")
+        .unwrap_err()
+        .to_string();
     assert!(err.contains("Unknown property 'count'"), "{err}");
     // Empty state/layout sections render explicitly, never silently.
     let runtime = Runtime::new(luca_ui::parse("App:\n  id = \"a\"\n").unwrap()).unwrap();

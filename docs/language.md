@@ -130,7 +130,7 @@ Block rules shared by all six:
 - Must live *inside* a component; one written at the file root is rejected: `` `layout` must belong to a component``.
 - Hold only `key = value` entries — nesting a component inside a block fails: `Only `key = value` entries are allowed inside `state` (found component 'Text')`.
 - A duplicated block fails (`Duplicate 'layout' block on component 'App'`), and a duplicated entry within a block fails naming the first location (`Duplicate 'gap' in `layout` block of component 'App' (first at 3:5)`).
-- `layout:`/`style:` entry names carry no global meaning — they are validated **structurally only** (identifier keys, scalar values, no duplicates). Layout and style semantics (dimensions, defaults, precedence) are explicitly open (○ not defined).
+- `layout:`/`style:` entry names are **structurally validated** (identifier keys, scalar values, no duplicates). The visual pipeline interprets the documented ◐ subset — `direction`, `gap`, `padding`, `width`, `height`, `align` and `background`, `color`, `border`, `radius`, `font_size` — and leaves every other entry opaque. Invalid values for recognized entries become non-fatal render warnings, never parse errors. See [Styling and theming](styling-theming.md).
 
 ## 8. Bindings
 
@@ -150,7 +150,7 @@ Rules:
 
 - The name must be declared in some `state:` block in the tree; otherwise the binding site reports `'title' is not declared`.
 - Locked property rules apply to the **resolved** value: `visible = text_field` where `text_field` holds a string fails at the binding with `Property 'visible' must be bool, found str`.
-- Bindings are allowed on component properties only; `state:` initial values must be literals (this keeps declaration order-free), and `layout:`/`style:` entries bind like component props but carry no locked type checks.
+- Bindings are allowed on component properties only; `state:` initial values must be literals (this keeps declaration order-free). `layout:`/`style:` entries bind like component props and carry no **locked** type checks; the visual pipeline applies its documented ◐ expectations to recognized entries and reports mismatches as non-fatal render warnings, while unknown entries stay opaque.
 - A binding resolves to a **value** only — never to a component reference (● locked: no component references exist in the model).
 
 ## 9. What is not allowed

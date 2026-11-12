@@ -1,24 +1,41 @@
 # Luca UI 1.0.2 Beta — release notes
 
-> Part of the **Luca UI 1.0 Beta** product line; the package version for this build is **1.0.2**.
+> Part of the **Luca UI 1.0 Beta** product line; the package version for this
+> build is **1.0.2**. This is the published 1.0.2 Beta release; the full
+> per-release detail lives in [`CHANGELOG.md`](CHANGELOG.md).
 
 ## What this release is
 
-The documentation and labeling release of the declarative UI layer for Luca Code:
+The declarative UI layer for Luca Code, now with a real static visual path:
 
-- `.lucu` declarations, Luca Code `.lucc` logic, one-way integration seam.
-- Batched state with bindings; events routed to handler names.
-- Text-backend rendering target; deterministic `TestHarness`; frozen diagnostics.
-- A complete user-facing guide set (getting started → language → components → state/events → testing → rendering → styling → examples → CLI), each snippet verified against this build.
+- `.lucu` declarations, Luca Code `.lucc` logic, one-way integration seam
+  with declaration-only handler checking.
+- Batched state with bindings (global and per-key subscriptions); events
+  routed to handler names.
+- Two concrete backends over one rendering contract: the headless **text
+  backend** and a dependency-free, static **SVG backend** built from a layout
+  engine, display list, and hit testing.
+- Deterministic `TestHarness`; frozen error diagnostics plus non-fatal render
+  warnings; a `check` CLI that validates the whole static picture and a
+  `render` CLI that writes SVG snapshots.
+- A complete user-facing guide set (getting started → language → components →
+  state/events → testing → rendering → styling → examples → CLI), each snippet
+  verified against this build.
 
-**No `.lucu`/`.lucc` language behavior changed since the 1.0.0 initial publication** — this release refreshes documentation, examples, packaging labels, and the extension. The frozen diagnostics catalog is unchanged.
+The frozen structural diagnostics catalog is unchanged. New **render
+warnings** cover the documented layout/style assumption subset and never fail
+a render.
 
 ## Verified pair
 
 | Product | Version | Checks |
 |---|---|---|
-| Luca UI | 1.0.2 Beta (package 1.0.2) | Full Rust suite green; Clippy `-D warnings` clean; all examples + both cargo examples verified; extension 10/10 unit tests |
-| Luca Code | 1.0 Beta (package 1.0.0) | 39 tests passed; untouched by this release (zero UI edits in its tree) |
+| Luca UI | 1.0.2 Beta (package 1.0.2) | 93 Rust tests green; Clippy `-D warnings` clean; all examples + all cargo examples verified; extension 10/10 unit tests |
+| Luca Code | 1.0.3 Beta (package 1.0.3) | 179 tests passed; untouched by this release (zero UI edits in its tree) |
+
+Luca Code and Luca UI stay one compatibility generation: Luca UI depends on
+Luca Code by relative path and reuses only its public library; Luca Code never
+depends on Luca UI.
 
 ## Install
 
@@ -36,15 +53,37 @@ Then run a UI file: `luca-ui hello.lucu`. Debug builds additionally offer
 
 Full walkthrough: [docs/getting-started.md](getting-started.md).
 
+## Rendering
+
+```sh
+luca-ui render examples/visual.lucu --out visual.svg --width 320 --height 200
+cargo run --example visual    # same SVG on standard output
+```
+
+The SVG snapshot is deterministic and self-contained (`<svg` with `xmlns`,
+`width`, `height`, `viewBox`, escaped `<rect>`/`<text>` primitives). It is
+**static**: no interaction, animation, fonts, images, clipping, or
+accessibility tree, and it is not a browser/rendering-engine claim.
+
+`luca-ui check <file.lucu>` builds the same visual and prints render warnings
+without writing a file. Recognized-but-invalid layout/style values warn and
+fall back to defaults; unknown entry names stay opaque and produce no warning.
+
+Details: [docs/rendering.md](rendering.md), [docs/cli.md](cli.md).
+
 ## VS Code extension (1.0.2)
 
-`editors/vscode/` builds `luca-ui-1.0.2.vsix`: `.lucu` syntax highlighting, snippets, a starter-file command, and one-key run through the CLI (with `Error at line:column:` surfaced as editor diagnostics). Install the local build:
+`editors/vscode/` builds `luca-ui-1.0.2.vsix`: `.lucu` syntax highlighting,
+snippets, a starter-file command, and one-key run through the CLI (with
+`Error at line:column:` surfaced as editor diagnostics). Install the local
+build:
 
 ```sh
 code --install-extension editors/vscode/luca-ui-1.0.2.vsix
 ```
 
-The extension's own README covers commands, settings, and troubleshooting. A Marketplace listing is pending publisher access.
+The extension's own README covers commands, settings, and troubleshooting. A
+Marketplace listing is pending publisher access.
 
 ## Artifacts
 
@@ -59,16 +98,34 @@ cargo build --release --offline                                    # the luca-ui
 
 ## Known limits of this Beta
 
-- Text backend only; native / custom-GPU / web are architectural options, not implemented.
-- The extension ships in-repo (and as a locally built `.vsix`) but is not yet on the Marketplace (needs a `VSCE_PAT` publisher secret).
-- Assumption syntax throughout — `state:`/`events:`/`layout:`/`style:`/`transitions:`/`theme:` blocks and their entry names work exactly as documented and are flagged `◐ Assumption` in the guides; the full component inventory, layout/style semantics, transition timing, and theme tokens await the design record.
-- Not published to a crate registry (`luca-code` is not published; the package license is proprietary) or any marketplace.
-- No install scripts ship with this Beta.
+- Two backends ship: headless text and **static** SVG. Native / custom-GPU /
+  web remain architectural options, not implemented; interactive
+  pointer/keyboard routing is not implemented (only static hit testing).
+- Visual semantics are a documented **◐ assumption subset** — `direction`,
+  `gap`, `padding`, `width`, `height`, `align` and `background`, `color`,
+  `border`, `radius`, `font_size` (`#rrggbb`). No wrapping, clipping,
+  scrolling, flex/grid algorithms, inheritance, named colors, or font shaping.
+- Text metrics are approximate (`font_size × 0.6` per character,
+  `font_size × 1.2` per line); not typographic.
+- Automatic `.lucu`→`.lucc` event execution is not implemented; the host
+  application performs dispatch → run logic → state update → re-render. Handler
+  checking is declaration-only and reports imports as unverified.
+- The extension ships in-repo (and as a locally built `.vsix`) but is not yet
+  on the Marketplace (needs a `VSCE_PAT` publisher secret).
+- The full component inventory, complete layout/style semantics, transition
+  timing, theme tokens, and resource file formats await the design record.
+- Not published to a crate registry (`luca-code` is not published; the
+  package license is proprietary) or any marketplace. No install scripts ship
+  with this Beta.
 
 ## What changed in 1.0.2
 
-See [CHANGELOG.md](CHANGELOG.md). Summary: docs overhaul, version labels → 1.0.2 Beta, extension 1.0.2 + rebuilt `.vsix`, example headers refreshed, generation-level compatibility test.
+See [CHANGELOG.md](CHANGELOG.md). Summary: foundation fixes, a stronger Luca Code
+seam (logic loading, paired paths, declaration-only handler checks, per-key
+subscriptions), the static SVG visual pipeline, `check`/`render` CLI commands,
+new tests and examples, and refreshed documentation.
 
 ## Next
 
-1.0 stable follows after Beta validation: defect fixes and compatibility confirmation only.
+1.0 stable follows after Beta validation: defect fixes and compatibility
+confirmation only.
