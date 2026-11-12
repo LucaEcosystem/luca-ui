@@ -5,6 +5,7 @@
 
 use std::path::{Path, PathBuf};
 use std::process::Command;
+use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 const VIEW: &str =
@@ -16,12 +17,23 @@ fn bin() -> &'static str {
     env!("CARGO_BIN_EXE_luca-ui")
 }
 
+/// Unique per-test scratch directory.
+///
+/// Parallel tests share a process id and can read the same nanosecond
+/// timestamp, so the name also carries a process-wide counter. Without it,
+/// one test's cleanup can delete another test's files mid-run.
+static TEMP_COUNTER: AtomicUsize = AtomicUsize::new(0);
+
 fn temp_dir() -> PathBuf {
     let stamp = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .unwrap()
         .as_nanos();
-    let dir = std::env::temp_dir().join(format!("luca-ui-cli-{}-{stamp}", std::process::id()));
+    let counter = TEMP_COUNTER.fetch_add(1, Ordering::Relaxed);
+    let dir = std::env::temp_dir().join(format!(
+        "luca-ui-cli-{}-{stamp}-{counter}",
+        std::process::id()
+    ));
     std::fs::create_dir_all(&dir).unwrap();
     dir
 }
