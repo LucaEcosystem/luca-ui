@@ -82,8 +82,9 @@ build:
 code --install-extension editors/vscode/luca-ui-1.0.2.vsix
 ```
 
-The extension's own README covers commands, settings, and troubleshooting. A
-Marketplace listing is pending publisher access.
+The extension's own README covers commands, settings, and troubleshooting. The
+Marketplace listing (`luca-ecosystem.luca-ui`) exists; upload
+`luca-ui-1.0.2.vsix` to update it to 1.0.2 Beta.
 
 ## Artifacts
 
@@ -110,13 +111,15 @@ cargo build --release --offline                                    # the luca-ui
 - Automatic `.lucu`→`.lucc` event execution is not implemented; the host
   application performs dispatch → run logic → state update → re-render. Handler
   checking is declaration-only and reports imports as unverified.
-- The extension ships in-repo (and as a locally built `.vsix`) but is not yet
-  on the Marketplace (needs a `VSCE_PAT` publisher secret).
+- The extension ships in-repo, on GitHub Releases, and on the Visual Studio
+  Marketplace (`luca-ecosystem.luca-ui`). The 1.0.2 Beta `.vsix` is attached to
+  this release and can be uploaded to the Marketplace to update the listing.
 - The full component inventory, complete layout/style semantics, transition
   timing, theme tokens, and resource file formats await the design record.
 - Not published to a crate registry (`luca-code` is not published; the
-  package license is proprietary) or any marketplace. No install scripts ship
-  with this Beta.
+  package license is proprietary). GitHub Releases and the Visual Studio
+  Marketplace are the distribution channels. No install scripts ship with this
+  Beta.
 
 ## What changed in 1.0.2
 

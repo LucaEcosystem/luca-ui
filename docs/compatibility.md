@@ -8,7 +8,7 @@ compatibility decisions). The verified pair for this release:
 | Product | Version | Status |
 |---|---|---|
 | Luca Code | 1.0.3 Beta (`PRODUCT_VERSION`, `Cargo.toml` 1.0.3) | Published host language; 179-test suite green |
-| Luca UI | 1.0.2 Beta (`PRODUCT_VERSION`, `Cargo.toml` 1.0.2) | Publication Beta; **do not publish, do not label stable** |
+| Luca UI | 1.0.2 Beta (`PRODUCT_VERSION`, `Cargo.toml` 1.0.2) | Publication Beta; **do not label stable** |
 
 Minor releases within the generation stay compatible. A new generation
 starts the SPEC migration timetable; historic releases are archived, and

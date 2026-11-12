@@ -21,7 +21,8 @@ luca-ui --version   # luca-ui 1.0.2 Beta
 
 ### 2. Install the extension
 
-The extension is currently distributed through the repository (a Marketplace listing is pending). Two options:
+The extension is available on the Visual Studio Marketplace
+(`luca-ecosystem.luca-ui`) and through the repository. Two options:
 
 - **From the GitHub release:** download `luca-ui-1.0.2.vsix` and run
 

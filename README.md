@@ -97,7 +97,7 @@ Everything is explained step by step in [Getting started](docs/getting-started.m
 
 ## The VS Code extension
 
-`editors/vscode/` ships the official Luca UI extension: `.lucu` syntax highlighting, snippets, a starter-file command, and one-key run through the CLI. Zero runtime dependencies.
+`editors/vscode/` ships the official Luca UI extension: `.lucu` syntax highlighting, snippets, a starter-file command, and one-key run through the CLI. Zero runtime dependencies. Also available on the Visual Studio Marketplace (`luca-ecosystem.luca-ui`).
 
 ```sh
 code --install-extension editors/vscode/luca-ui-1.0.2.vsix
